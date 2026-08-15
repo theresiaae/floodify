@@ -1,82 +1,45 @@
-# Floodify — Website Prediksi Risiko Banjir Kota Denpasar
+# 🌊 Floodify — Prediksi Risiko Banjir Kota Denpasar
 
-Struktur proyek:
+**Floodify** adalah platform web interaktif dan edukatif yang dirancang untuk memetakan serta memprediksi potensi risiko banjir di wilayah Kota Denpasar secara spasial.
 
-```
-floodify/
-├── frontend/   React + Vite + Tailwind + Leaflet
-└── backend/    Flask (GEE + Visual Crossing + model Random Forest)
-```
+Aplikasi ini mengintegrasikan data penginderaan jauh (*remote sensing*), data cuaca, dan pemodelan kecerdasan buatan (*Machine Learning*) untuk memberikan gambaran tingkat kerawanan banjir yang mudah dipahami oleh masyarakat umum maupun akademisi.
 
-## 1. Frontend
+---
 
-```bash
-cd frontend
-npm install
-cp .env.example .env     # sesuaikan VITE_API_BASE_URL kalau backend tidak di localhost:5000
-npm run dev
-```
+## 💡 Cara Kerja Singkat
 
-- Peta dibatasi memakai poligon batas administratif Kota Denpasar asli
-  (sumber: GADM v4.0, via repo `mahendrayudha/indonesia-geojson`), sudah
-  disederhanakan dengan Shapely supaya ringan di browser. File ada di
-  `src/data/denpasarBoundary.js`.
-- Klik di luar poligon akan menampilkan peringatan dan tidak mengisi
-  koordinat. Area di luar Denpasar juga digelapkan di peta (mask polygon)
-  supaya jelas secara visual mana yang bisa diklik.
-- Saat titik dipilih, frontend otomatis memanggil `/api/parameters` di
-  belakang layar (curah hujan + 4 parameter GEE) — nilainya tidak
-  ditampilkan di UI, sesuai wireframe kamu. Tombol "Prediksi Sekarang"
-  baru memanggil `/api/predict` dan menampilkan status + probabilitas.
+1. **Pilih Lokasi**: Tentukan titik koordinat di dalam wilayah Kota Denpasar melalui peta interaktif atau fitur pencarian nama tempat/jalan.
+2. **Pilih Tanggal**: Pilih tanggal yang diinginkan untuk melihat data kondisi lingkungan pada waktu tersebut.
+3. **Analisis Risiko**: Sistem memproses parameter lingkungan setempat dan menampilkan tingkat risiko banjir (**Aman**, **Waspada**, atau **Rawan**) beserta estimasi probabilitasnya.
 
-## 2. Backend
+---
 
-```bash
-cd backend
-python -m venv venv && source venv/bin/activate
-pip install -r requirements.txt
-cp .env.example .env     # isi API key & kredensial GEE
-```
+## 📚 5 Parameter Lingkungan yang Dianalisis
 
-Isi `.env`:
-- `VISUALCROSSING_API_KEY` — API key dari visualcrossing.com.
-- `GEE_SERVICE_ACCOUNT_EMAIL` + `GEE_SERVICE_ACCOUNT_KEY_PATH` — kalau mau
-  pakai service account (disarankan). Kalau dikosongkan, kode akan pakai
-  Application Default Credentials — jalankan `earthengine authenticate`
-  sekali di mesin ini sebelum `flask run`.
+Sistem menganalisis 5 indikator utama yang mempengaruhi potensi terjadinya genangan dan banjir:
 
-Taruh model hasil skripsi di `backend/model/model_rf_terbaik.pkl`
-(hasil `joblib.dump(model, ...)` dari Colab kamu).
+| Parameter | Penjelasan | Peran terhadap Banjir |
+|---|---|---|
+| 🌧️ **Curah Hujan** | Tingkat intensitas air hujan yang turun di suatu lokasi. | Hujan lebat berdurasi lama meningkatkan volume air yang harus ditampung saluran drainase. |
+| ⛰️ **Elevasi (Ketinggian Tanah)** | Ketinggian posisi daratan dari permukaan air laut. | Dataran rendah dan cekungan menjadi muara limpasan air dari daerah yang lebih tinggi. |
+| 🌿 **NDVI (Kerapatan Vegetasi)** | Indeks kehijauan yang menunjukkan kerapatan tanaman dan pohon. | Vegetasi yang rapat mempercepat penyerapan air ke dalam tanah (*infiltrasi*). |
+| 🏙️ **Tutupan Lahan** | Karakteristik fisik permukaan tanah (lahan terbangun, sawah, perairan, dll). | Area terbangun dan semen kedap air menghambat resapan dan memperbesar limpasan permukaan. |
+| 💧 **Kelembapan Tanah** | Tingkat kandungan air yang tersimpan di dalam pori-pori tanah. | Tanah yang sudah jenuh air memiliki daya serap rendah, sehingga air hujan langsung menggenang. |
 
-Jalankan:
-```bash
-python app.py
-```
+---
 
-## ⚠️ Hal yang WAJIB dicek sebelum dipakai untuk skripsi/publikasi
+## ✨ Fitur Utama
 
-1. **Tutupan lahan: ESA WorldCover vs ESRI Annual Land Cover.**
-   Catatan proyek kamu menyebut model dilatih dengan fitur `tutupan_lahan`
-   dari **ESRI Annual Land Cover**, tapi permintaan di pesan ini minta
-   sumber **ESA WorldCover**. Kode kelas kedua skema ini berbeda (misalnya
-   kode "lahan terbangun" tidak sama angkanya), jadi backend
-   (`services/predict_service.py`) sudah saya kasih `LAND_COVER_MAP` untuk
-   memetakan kode ESA WorldCover ke kode yang **kamu perkirakan** dipakai
-   ESRI — **ini masih perlu kamu cek dan sesuaikan** dengan mapping kelas
-   yang benar-benar dipakai saat training, atau kalau lebih simpel, latih
-   ulang model dengan fitur ESA WorldCover supaya konsisten dengan
-   deployment. Tanpa ini, prediksi bisa salah walau kelima parameter lain
-   sudah benar.
-2. **Nama kolom & urutan fitur** di `predict_service.py`
-   (`FEATURE_ORDER`) mengikuti catatan skripsi kamu — cek lagi apakah
-   nama kolom persis sama dengan yang dipakai saat `model.fit()` di Colab
-   (termasuk urutan One-Hot Encoding kalau `tutupan_lahan` di-encode,
-   bukan dipakai sebagai angka mentah).
-3. **Poligon batas Denpasar** yang dipakai sudah dari sumber resmi (GADM),
-   tapi sudah disederhanakan (~makin sedikit titik) supaya ringan — cukup
-   akurat untuk keperluan UI, tapi bukan pengganti data BIG resmi kalau
-   dibutuhkan presisi survei.
-4. Endpoint GEE (`gee_service.py`) memanggil Earth Engine secara sinkron
-   tiap klik pengguna, yang bisa memakan waktu beberapa detik — sudah
-   ditampilkan sebagai status loading di UI, tapi pertimbangkan caching
-   per grid/kelurahan kalau traffic tinggi.
+- 🗺️ **Peta Spasial Kota Denpasar**: Dibatasi sesuai batas administratif resmi untuk memastikan akurasi wilayah pemodelan.
+- 🔍 **Pencarian Lokasi Cepat**: Memudahkan pencarian alamat, fasilitas umum, atau banjar/kelurahan di Denpasar.
+- 📊 **Indikator Risiko Visual**: Visualisasi tingkat risiko yang intuitif dan informatif.
+- 📖 **Modul Edukasi Interaktif**: Informasi edukatif tentang fungsi tiap parameter lingkungan bagi mitigasi bencana.
+- 📱 **Desain Ramah Pengguna & Responsif**: Tampilan optimal di perangkat ponsel (*smartphone*), tablet, dan komputer.
+
+---
+
+## 🛠️ Teknologi yang Digunakan
+
+- **Antarmuka (Frontend)**: React, Vite, Tailwind CSS, Leaflet Maps
+- **Komputasi & Model (Backend)**: Python, Flask, Random Forest Classifier, Google Earth Engine
+- **Data Spasial**: OpenStreetMap, GADM Boundary Data
