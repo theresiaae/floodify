@@ -2,8 +2,11 @@ import logging
 import os
 from datetime import date, datetime
 
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request
 from flask_cors import CORS
+
+load_dotenv()
 
 from services.boundary_service import is_inside_denpasar
 from services.gee_service import get_gee_parameters
@@ -82,9 +85,8 @@ def parameters():
     tertentu: elevasi, tutupan lahan, NDVI, kelembapan tanah (Google Earth
     Engine) dan curah hujan (Visual Crossing Weather API — historis, hari
     ini, atau forecast beberapa hari ke depan).
-    Nilainya di-cache di server; endpoint ini sengaja hanya mengembalikan
-    status "ready", bukan nilai mentahnya, karena front-end memang tidak
-    perlu menampilkannya.
+    Nilainya di-cache di server dan dikembalikan ke frontend untuk
+    menampilkan informasi parameter lingkungan lokasi terpilih.
     """
     lat, lng, target_date, error = _validate_request()
     if error:
@@ -100,7 +102,7 @@ def parameters():
 
     _param_cache[_cache_key(lat, lng, target_date)] = values
 
-    return jsonify({"ready": True})
+    return jsonify({"ready": True, "parameters": values})
 
 
 @app.post("/api/predict")
@@ -133,7 +135,7 @@ def predict_route():
         logger.exception("Gagal menjalankan model prediksi")
         return jsonify({"error": "Gagal menjalankan model prediksi."}), 500
 
-    return jsonify(result)
+    return jsonify({**result, "parameters": values})
 
 
 if __name__ == "__main__":

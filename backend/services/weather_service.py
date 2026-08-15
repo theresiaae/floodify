@@ -49,9 +49,7 @@ def get_rainfall(lat: float, lng: float, target_date: date | None = None) -> flo
 
     params = {
         "unitGroup": "metric",
-        # 'current' cuma valid untuk hari ini; untuk tanggal lain kita ambil
-        # akumulasi harian dari 'days'.
-        "include": "days" if query_date != today else "current,days",
+        "include": "days",
         "elements": "precip,precipprob,preciptype,datetime",
         "key": api_key,
         "contentType": "json",
@@ -61,13 +59,8 @@ def get_rainfall(lat: float, lng: float, target_date: date | None = None) -> flo
     response.raise_for_status()
     data = response.json()
 
-    precip = None
-    if query_date == today:
-        current = data.get("currentConditions", {})
-        precip = current.get("precip")
-
-    if precip is None:
-        day = (data.get("days") or [{}])[0]
-        precip = day.get("precip", 0.0)
+    days = data.get("days") or [{}]
+    day = days[0]
+    precip = day.get("precip", 0.0)
 
     return float(precip or 0.0)

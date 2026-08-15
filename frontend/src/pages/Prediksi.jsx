@@ -1,5 +1,17 @@
 import { useState, useCallback, useRef, useEffect } from 'react'
-import { MapPin, Search, Loader2, AlertTriangle, Droplets, CalendarDays } from 'lucide-react'
+import {
+  MapPin,
+  Search,
+  Loader2,
+  AlertTriangle,
+  Droplets,
+  CalendarDays,
+  LocateFixed,
+  CloudRain,
+  Mountain,
+  Sprout,
+  Building2,
+} from 'lucide-react'
 import MapView from '../components/MapView'
 import SearchBox from '../components/SearchBox'
 import RiskGauge, { levelFromStatus } from '../components/RiskGauge'
@@ -8,6 +20,20 @@ import { isPointInPolygon } from '../utils/geo'
 import { DENPASAR_BOUNDARY } from '../data/denpasarBoundary'
 
 const MAX_FORECAST_DAYS_AHEAD = 15
+
+const LAND_COVER_LABELS = {
+  10: 'Pohon / Hutan',
+  20: 'Semak Belukar',
+  30: 'Padang Rumput',
+  40: 'Pertanian / Sawah',
+  50: 'Lahan Terbangun',
+  60: 'Lahan Terbuka',
+  70: 'Salju / Es',
+  80: 'Badan Air',
+  90: 'Lahan Basah',
+  95: 'Hutan Mangrove',
+  100: 'Lumut / Lichen',
+}
 
 function toISODate(d) {
   return d.toISOString().slice(0, 10)
@@ -25,8 +51,10 @@ export default function Prediksi() {
   const [flyTarget, setFlyTarget] = useState(null)
   const [date, setDate] = useState(TODAY_STR)
   const [paramsReady, setParamsReady] = useState(false)
+  const [parameters, setParameters] = useState(null)
   const [loadingParams, setLoadingParams] = useState(false)
   const [loadingPredict, setLoadingPredict] = useState(false)
+  const [locating, setLocating] = useState(false)
   const [result, setResult] = useState(null)
   const [error, setError] = useState(null)
   const [outsideWarning, setOutsideWarning] = useState(false)
@@ -43,7 +71,6 @@ export default function Prediksi() {
     warningTimer.current = setTimeout(() => setOutsideWarning(false), 2600)
   }, [])
 
-
   const handleSearchSelect = useCallback(
     (result) => {
       if (!isPointInPolygon(result.lat, result.lng, DENPASAR_BOUNDARY)) {
@@ -57,9 +84,39 @@ export default function Prediksi() {
     [handleOutsideClick]
   )
 
+  const handleCurrentLocation = useCallback(() => {
+    if (!navigator.geolocation) {
+      setError('Browser Anda tidak mendukung deteksi lokasi (Geolocation).')
+      return
+    }
+    setLocating(true)
+    setError(null)
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false)
+        const lat = pos.coords.latitude
+        const lng = pos.coords.longitude
+        if (!isPointInPolygon(lat, lng, DENPASAR_BOUNDARY)) {
+          handleOutsideClick()
+          return
+        }
+        setPosition({ lat, lng })
+        setResult(null)
+        setFlyTarget({ lat, lng, ts: Date.now() })
+      },
+      (err) => {
+        setLocating(false)
+        let msg = 'Gagal mendeteksi lokasi saat ini.'
+        if (err.code === 1) msg = 'Izin akses lokasi ditolak oleh browser.'
+        else if (err.code === 2) msg = 'Posisi GPS tidak dapat ditemukan.'
+        else if (err.code === 3) msg = 'Waktu permintaan lokasi habis (timeout).'
+        setError(msg)
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+    )
+  }, [handleOutsideClick])
+
   // Ambil ulang parameter setiap kali lokasi ATAU tanggal berubah.
-  // Curah hujan (historis/forecast) dan window NDVI/kelembapan tanah di
-  // backend mengikuti tanggal ini.
   useEffect(() => {
     if (!position) return
 
@@ -67,11 +124,17 @@ export default function Prediksi() {
     setResult(null)
     setError(null)
     setParamsReady(false)
+    setParameters(null)
     setLoadingParams(true)
 
     fetchParameters(position.lat, position.lng, date)
-      .then(() => {
-        if (!cancelled) setParamsReady(true)
+      .then((data) => {
+        if (!cancelled) {
+          setParamsReady(true)
+          if (data?.parameters) {
+            setParameters(data.parameters)
+          }
+        }
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || 'Gagal mengambil parameter lokasi.')
@@ -92,6 +155,9 @@ export default function Prediksi() {
     try {
       const data = await predictFlood(position.lat, position.lng, date)
       setResult(data)
+      if (data?.parameters) {
+        setParameters(data.parameters)
+      }
     } catch (err) {
       setError(err.message || 'Gagal menjalankan prediksi.')
     } finally {
@@ -120,6 +186,24 @@ export default function Prediksi() {
 
         <div className="absolute left-3 right-3 sm:left-auto sm:right-4 top-3 sm:top-4 z-[1000] sm:w-80">
           <SearchBox onSelectResult={handleSearchSelect} />
+        </div>
+
+        {/* Bottom-left GPS Location button */}
+        <div className="absolute left-3.5 sm:left-4 bottom-4 z-[1000]">
+          <button
+            type="button"
+            onClick={handleCurrentLocation}
+            disabled={locating}
+            className="flex items-center gap-2 rounded-xl border border-deep-200/80 bg-white/90 px-3 py-2 text-xs font-semibold text-deep-900 shadow-md backdrop-blur transition-all duration-200 hover:bg-white hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-75 cursor-pointer"
+            title="Gunakan lokasi GPS saya saat ini"
+          >
+            {locating ? (
+              <Loader2 size={15} className="animate-spin text-deep-600" />
+            ) : (
+              <LocateFixed size={15} className="text-[#0f4c5c]" />
+            )}
+            <span className="hidden sm:inline">Lokasi Saya</span>
+          </button>
         </div>
 
         {outsideWarning && (
@@ -174,25 +258,95 @@ export default function Prediksi() {
           </div>
 
           {position && (
-            <p className="mt-3 flex items-center gap-1.5 text-xs text-deep-800/60">
-              {loadingParams ? (
-                <>
-                  <Loader2 size={13} className="animate-spin shrink-0" /> Mengambil data elevasi, tutupan
-                  lahan, NDVI, kelembapan tanah &amp; curah hujan untuk tanggal ini...
-                </>
-              ) : paramsReady ? (
-                <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-alert-low shrink-0" /> Parameter lokasi
-                  siap digunakan
-                </>
-              ) : null}
-            </p>
+            <div className="mt-3">
+              <p className="flex items-center gap-1.5 text-xs text-deep-800/60">
+                {loadingParams ? (
+                  <>
+                    <Loader2 size={13} className="animate-spin shrink-0 text-deep-600" /> Mengambil data parameter elevasi, tutupan lahan, NDVI, kelembapan tanah &amp; curah hujan...
+                  </>
+                ) : paramsReady ? (
+                  <>
+                    <span className="h-2 w-2 rounded-full bg-alert-low shrink-0 ring-2 ring-alert-low/20" />
+                    <span className="font-medium text-deep-900">Parameter lokasi siap digunakan</span>
+                  </>
+                ) : null}
+              </p>
+
+              {/* Informative 5 Parameter Grid */}
+              {paramsReady && parameters && (
+                <div className="rise-in mt-3 space-y-2 rounded-xl border border-deep-200/80 bg-sage-50/70 p-2.5 sm:p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-[10px] font-bold uppercase tracking-wider text-deep-700/70">
+                      Parameter Lingkungan
+                    </p>
+                    <span className="text-[10px] text-deep-800/50">GEE &amp; Weather</span>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-2 text-xs">
+                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
+                      <CloudRain size={15} className="shrink-0 text-sky-600" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-deep-800/60">Curah Hujan</p>
+                        <p className="font-semibold text-deep-900 truncate">
+                          {parameters.curah_hujan != null ? `${parameters.curah_hujan.toFixed(1)} mm` : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
+                      <Mountain size={15} className="shrink-0 text-amber-700" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-deep-800/60">Elevasi</p>
+                        <p className="font-semibold text-deep-900 truncate">
+                          {parameters.elevasi != null ? `${parameters.elevasi.toFixed(1)} m dpl` : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
+                      <Sprout size={15} className="shrink-0 text-emerald-600" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-deep-800/60">NDVI (Vegetasi)</p>
+                        <p className="font-semibold text-deep-900 truncate">
+                          {parameters.ndvi != null ? parameters.ndvi.toFixed(2) : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
+                      <Droplets size={15} className="shrink-0 text-teal-600" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-deep-800/60">Kelembapan</p>
+                        <p className="font-semibold text-deep-900 truncate">
+                          {parameters.kelembapan_tanah != null
+                            ? `${(parameters.kelembapan_tanah * 100).toFixed(1)}%`
+                            : '—'}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="col-span-2 flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
+                      <Building2 size={15} className="shrink-0 text-indigo-600" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-[10px] text-deep-800/60">Tutupan Lahan</p>
+                        <p
+                          className="font-semibold text-deep-900 truncate"
+                          title={LAND_COVER_LABELS[parameters.tutupan_lahan] || `Kode ${parameters.tutupan_lahan}`}
+                        >
+                          {LAND_COVER_LABELS[parameters.tutupan_lahan] || `Kode ${parameters.tutupan_lahan}`}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
           )}
 
           <button
             onClick={handlePredict}
             disabled={!position || loadingParams || loadingPredict}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-deep-900 px-4 py-3 text-sm font-semibold text-sand transition-colors duration-200 hover:bg-deep-800 disabled:cursor-not-allowed disabled:bg-deep-300 disabled:text-deep-700/60"
+            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-deep-900 px-4 py-3 text-sm font-semibold text-sand transition-colors duration-200 hover:bg-deep-800 disabled:cursor-not-allowed disabled:bg-deep-300 disabled:text-deep-700/60 cursor-pointer"
           >
             {loadingPredict ? (
               <Loader2 size={16} className="animate-spin" />
