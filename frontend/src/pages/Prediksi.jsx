@@ -52,7 +52,7 @@ export default function Prediksi() {
       }
       setPosition({ lat: result.lat, lng: result.lng })
       setResult(null)
-      setFlyTarget({ lat: result.lat, lng: result.lng })
+      setFlyTarget({ lat: result.lat, lng: result.lng, ts: Date.now() })
     },
     [handleOutsideClick]
   )
@@ -103,36 +103,41 @@ export default function Prediksi() {
   const isFutureDate = date > TODAY_STR
 
   return (
-    <div className="mx-auto flex max-w-6xl flex-col gap-5 px-5 py-6 lg:h-[calc(100vh-70px)] lg:flex-row">
+    <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:gap-5 px-3.5 sm:px-5 py-4 sm:py-6 lg:h-[calc(100vh-70px)] lg:flex-row">
       {/* Map panel */}
-      <div className="relative flex-1 overflow-hidden rounded-3xl border border-deep-200 shadow-sm" style={{ minHeight: 420 }}>
-        <MapView position={position ? [position.lat, position.lng] : null} onSelect={handleSelect} onOutsideClick={handleOutsideClick} />
+      <div className="relative h-[420px] sm:h-[500px] lg:h-full w-full lg:flex-1 overflow-hidden rounded-2xl sm:rounded-3xl border border-deep-200 bg-[#dfeef0] shadow-sm">
+        <MapView
+          position={position ? [position.lat, position.lng] : null}
+          flyTarget={flyTarget}
+          onSelect={handleSelect}
+          onOutsideClick={handleOutsideClick}
+        />
 
-        <div className="pointer-events-none absolute left-4 top-4 z-[1000] rounded-xl bg-white/90 px-3.5 py-2 shadow-sm backdrop-blur">
+        <div className="pointer-events-none absolute left-4 top-4 z-[1000] hidden md:block rounded-xl bg-white/90 px-3.5 py-2 shadow-sm backdrop-blur">
           <p className="font-display text-sm font-semibold text-deep-900">Peta Kota Denpasar</p>
           <p className="text-xs text-deep-800/60">Klik di dalam batas wilayah untuk memilih lokasi</p>
         </div>
 
-        <div className="absolute right-4 top-4 z-[1000] w-full max-w-[280px] sm:max-w-xs">
+        <div className="absolute left-3 right-3 sm:left-auto sm:right-4 top-3 sm:top-4 z-[1000] sm:w-80">
           <SearchBox onSelectResult={handleSearchSelect} />
         </div>
 
         {outsideWarning && (
-          <div className="rise-in absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-full bg-alert-high px-4 py-2 text-sm font-medium text-white shadow-lg">
-            <AlertTriangle size={16} />
+          <div className="rise-in absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-1.5 sm:gap-2 rounded-full bg-alert-high px-3.5 py-2 text-xs sm:text-sm font-medium text-white shadow-lg whitespace-nowrap">
+            <AlertTriangle size={15} />
             Titik ini di luar wilayah Kota Denpasar
           </div>
         )}
       </div>
 
       {/* Control / result panel */}
-      <aside className="flex w-full flex-col gap-4 lg:w-[340px] lg:overflow-y-auto lg:pr-1">
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-deep-700/60">
+      <aside className="flex w-full flex-col gap-3.5 sm:gap-4 lg:w-[340px] lg:overflow-y-auto lg:pr-1">
+        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5">
+          <p className="mb-2.5 sm:mb-3 text-xs font-medium uppercase tracking-wide text-deep-700/60">
             Tanggal Prediksi
           </p>
           <label className="flex items-center gap-2.5 rounded-xl border border-deep-200 bg-sage-100 px-3 py-2.5">
-            <CalendarDays size={16} className="text-deep-700" />
+            <CalendarDays size={16} className="text-deep-700 shrink-0" />
             <input
               type="date"
               value={date}
@@ -149,20 +154,20 @@ export default function Prediksi() {
           </p>
         </div>
 
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-5">
-          <p className="mb-3 text-xs font-medium uppercase tracking-wide text-deep-700/60">
+        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5">
+          <p className="mb-2.5 sm:mb-3 text-xs font-medium uppercase tracking-wide text-deep-700/60">
             Lokasi Terpilih
           </p>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
             <div className="rounded-xl bg-sage-100 px-3 py-2.5">
               <p className="text-[11px] text-deep-800/60">Latitude</p>
-              <p className="font-mono text-sm text-deep-900">
+              <p className="font-mono text-sm text-deep-900 truncate">
                 {position ? position.lat.toFixed(4) : '—'}
               </p>
             </div>
             <div className="rounded-xl bg-sage-100 px-3 py-2.5">
               <p className="text-[11px] text-deep-800/60">Longitude</p>
-              <p className="font-mono text-sm text-deep-900">
+              <p className="font-mono text-sm text-deep-900 truncate">
                 {position ? position.lng.toFixed(4) : '—'}
               </p>
             </div>
@@ -172,12 +177,12 @@ export default function Prediksi() {
             <p className="mt-3 flex items-center gap-1.5 text-xs text-deep-800/60">
               {loadingParams ? (
                 <>
-                  <Loader2 size={13} className="animate-spin" /> Mengambil data elevasi, tutupan
+                  <Loader2 size={13} className="animate-spin shrink-0" /> Mengambil data elevasi, tutupan
                   lahan, NDVI, kelembapan tanah &amp; curah hujan untuk tanggal ini...
                 </>
               ) : paramsReady ? (
                 <>
-                  <span className="h-1.5 w-1.5 rounded-full bg-alert-low" /> Parameter lokasi
+                  <span className="h-1.5 w-1.5 rounded-full bg-alert-low shrink-0" /> Parameter lokasi
                   siap digunakan
                 </>
               ) : null}
@@ -199,7 +204,7 @@ export default function Prediksi() {
 
           {!position && (
             <p className="mt-2.5 flex items-center gap-1.5 text-xs text-deep-800/50">
-              <MapPin size={13} /> Pilih titik pada peta terlebih dahulu
+              <MapPin size={13} className="shrink-0" /> Pilih titik pada peta terlebih dahulu
             </p>
           )}
 
@@ -210,8 +215,8 @@ export default function Prediksi() {
           )}
         </div>
 
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-5">
-          <p className="mb-4 text-xs font-medium uppercase tracking-wide text-deep-700/60">
+        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5">
+          <p className="mb-3 sm:mb-4 text-xs font-medium uppercase tracking-wide text-deep-700/60">
             Hasil Prediksi
           </p>
 

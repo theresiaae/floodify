@@ -1,8 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
-import { Search, MapPinned, Loader2 } from 'lucide-react'
+import { Search, MapPinned, Loader2, X } from 'lucide-react'
 import { searchLocation } from '../api/geocode'
 
-const DEBOUNCE_MS = 450
+const DEBOUNCE_MS = 400
 const MIN_QUERY_LENGTH = 3
 
 export default function SearchBox({ onSelectResult }) {
@@ -12,13 +12,21 @@ export default function SearchBox({ onSelectResult }) {
   const [open, setOpen] = useState(false)
   const debounceRef = useRef(null)
   const containerRef = useRef(null)
+  const suppressSearchRef = useRef(false)
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current)
 
+    // If query change was triggered by selecting a result item, skip searching
+    if (suppressSearchRef.current) {
+      suppressSearchRef.current = false
+      return
+    }
+
     if (query.trim().length < MIN_QUERY_LENGTH) {
       setResults([])
       setLoading(false)
+      setOpen(false)
       return
     }
 
@@ -35,7 +43,9 @@ export default function SearchBox({ onSelectResult }) {
       }
     }, DEBOUNCE_MS)
 
-    return () => clearTimeout(debounceRef.current)
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current)
+    }
   }, [query])
 
   // Tutup dropdown kalau klik di luar search box.
@@ -50,10 +60,22 @@ export default function SearchBox({ onSelectResult }) {
   }, [])
 
   const handleSelect = (result) => {
+    suppressSearchRef.current = true
+    if (debounceRef.current) clearTimeout(debounceRef.current)
     setQuery(result.label)
     setOpen(false)
     setResults([])
+    setLoading(false)
     onSelectResult(result)
+  }
+
+  const handleClear = () => {
+    suppressSearchRef.current = true
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    setQuery('')
+    setResults([])
+    setOpen(false)
+    setLoading(false)
   }
 
   return (
@@ -66,11 +88,27 @@ export default function SearchBox({ onSelectResult }) {
         )}
         <input
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          onFocus={() => results.length > 0 && setOpen(true)}
+          onChange={(e) => {
+            suppressSearchRef.current = false
+            setQuery(e.target.value)
+          }}
+          onFocus={() => {
+            if (results.length > 0 && !suppressSearchRef.current) {
+              setOpen(true)
+            }
+          }}
           placeholder="Cari jalan atau tempat di Denpasar..."
           className="w-full bg-transparent text-sm text-deep-900 outline-none placeholder:text-deep-800/40"
         />
+        {query && (
+          <button
+            type="button"
+            onClick={handleClear}
+            className="rounded-md p-0.5 text-deep-400 hover:bg-deep-100 hover:text-deep-700 transition-colors"
+          >
+            <X size={15} />
+          </button>
+        )}
       </div>
 
       {open && results.length > 0 && (
@@ -78,8 +116,13 @@ export default function SearchBox({ onSelectResult }) {
           {results.map((result) => (
             <li key={result.id}>
               <button
+                type="button"
+                onMouseDown={(e) => {
+                  e.preventDefault()
+                  handleSelect(result)
+                }}
                 onClick={() => handleSelect(result)}
-                className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm text-deep-800 hover:bg-sage-100"
+                className="flex w-full items-start gap-2 px-3 py-2.5 text-left text-sm text-deep-800 hover:bg-sage-100 transition-colors"
               >
                 <MapPinned size={15} className="mt-0.5 shrink-0 text-deep-500" />
                 <span className="line-clamp-2">{result.label}</span>

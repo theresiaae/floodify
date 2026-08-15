@@ -4,6 +4,7 @@ import {
   TileLayer,
   Polygon,
   Marker,
+  ZoomControl,
   useMap,
   useMapEvents,
 } from 'react-leaflet'
@@ -39,18 +40,49 @@ function ClickCatcher({ onInside, onOutside }) {
   return null
 }
 
-
 function FlyToHandler({ target }) {
   const map = useMap()
   useEffect(() => {
     if (target) {
-      map.flyTo([target.lat, target.lng], 16, { duration: 1.1 })
+      map.flyTo([target.lat, target.lng], 15, { duration: 1.1 })
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [target])
+  }, [map, target])
   return null
 }
 
+function MapResizer() {
+  const map = useMap()
+  useEffect(() => {
+    map.invalidateSize()
+    const container = map.getContainer()
+
+    let resizeObserver = null
+    if (container && typeof ResizeObserver !== 'undefined') {
+      resizeObserver = new ResizeObserver(() => {
+        map.invalidateSize()
+      })
+      resizeObserver.observe(container)
+    }
+
+    const t1 = setTimeout(() => map.invalidateSize(), 100)
+    const t2 = setTimeout(() => map.invalidateSize(), 400)
+    const t3 = setTimeout(() => map.invalidateSize(), 1000)
+
+    const handleResize = () => {
+      map.invalidateSize()
+    }
+    window.addEventListener('resize', handleResize)
+
+    return () => {
+      if (resizeObserver) resizeObserver.disconnect()
+      clearTimeout(t1)
+      clearTimeout(t2)
+      clearTimeout(t3)
+      window.removeEventListener('resize', handleResize)
+    }
+  }, [map])
+  return null
+}
 
 export default function MapView({ position, flyTarget, onSelect, onOutsideClick }) {
   const bounds = useMemo(() => L.latLngBounds(DENPASAR_BOUNDARY), [])
@@ -61,14 +93,17 @@ export default function MapView({ position, flyTarget, onSelect, onOutsideClick 
     <MapContainer
       center={DENPASAR_CENTER}
       zoom={12}
-      minZoom={11}
-      maxZoom={17}
+      minZoom={10}
+      maxZoom={18}
+      zoomControl={false}
       scrollWheelZoom
       className="h-full w-full"
-      maxBounds={bounds.pad(0.35)}
-      maxBoundsViscosity={0.7}
+      style={{ width: '100%', height: '100%' }}
+      maxBounds={bounds.pad(1.2)}
+      maxBoundsViscosity={0.5}
       ref={mapRef}
     >
+      <ZoomControl position="bottomright" />
       <TileLayer
         attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors'
         url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
@@ -100,7 +135,8 @@ export default function MapView({ position, flyTarget, onSelect, onOutsideClick 
       />
 
       <ClickCatcher onInside={onSelect} onOutside={onOutsideClick} />
-       <FlyToHandler target={flyTarget} />
+      <FlyToHandler target={flyTarget} />
+      <MapResizer />
 
       {position && <Marker position={position} icon={markerIcon} />}
     </MapContainer>
