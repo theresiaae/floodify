@@ -44,7 +44,7 @@ export default function Edukasi() {
     <div className="mx-auto max-w-6xl px-3.5 sm:px-5 py-6 sm:py-10">
       <div className="mx-auto max-w-2xl text-center">
         <p className="mb-2 text-xs font-medium uppercase tracking-wide text-deep-600">
-          Edukasi Parameter
+          Tentang Parameter
         </p>
         <h1 className="font-display text-2xl font-semibold text-deep-900 sm:text-4xl">
           Parameter yang Digunakan dalam Prediksi
