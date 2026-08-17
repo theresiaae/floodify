@@ -40,7 +40,7 @@ export default function Navbar() {
               `${linkBase} ${isActive ? 'bg-deep-800 text-sand shadow-sm' : 'text-deep-800 hover:bg-sage-200'}`
             }
           >
-            <span>Edukasi<span className="hidden sm:inline"> Parameter</span></span>
+            <span>Tentang<span className="hidden sm:inline"> Parameter</span></span>
           </NavLink>
         </nav>
       </div>
