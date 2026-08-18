@@ -6,7 +6,7 @@ const linkBase =
 export default function Navbar() {
   return (
     <header className="sticky top-0 z-[1100] border-b border-deep-200/70 bg-sand/85 backdrop-blur-md">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-3.5 sm:px-5 py-2.5 sm:py-3.5">
+      <div className="mx-auto flex max-w-[1580px] w-full items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 sm:py-3.5">
         <div className="flex items-center gap-2 sm:gap-2.5">
           <svg width="26" height="26" viewBox="0 0 30 30" fill="none" xmlns="http://www.w3.org/2000/svg" className="sm:w-[30px] sm:h-[30px]">
             <path

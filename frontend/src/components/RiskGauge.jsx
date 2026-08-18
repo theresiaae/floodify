@@ -22,7 +22,7 @@ export default function RiskGauge({ probability = 0, level = 'aman' }) {
   const { color } = LEVELS[level] || LEVELS.aman
 
   return (
-    <div className="relative" style={{ width: SIZE, height: SIZE }}>
+    <div className="relative shrink-0" style={{ width: SIZE, height: SIZE }}>
       <svg width={SIZE} height={SIZE} className="-rotate-90">
         <circle
           cx={SIZE / 2}
@@ -46,10 +46,10 @@ export default function RiskGauge({ probability = 0, level = 'aman' }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-mono text-2xl font-semibold text-deep-900">
+        <span className="font-mono text-3xl font-semibold text-deep-900">
           {clamped.toFixed(0)}%
         </span>
-        <span className="text-[10px] uppercase tracking-wide text-deep-700/70">
+        <span className="text-xs uppercase tracking-wide text-deep-700/80 font-semibold mt-0.5">
           probabilitas
         </span>
       </div>

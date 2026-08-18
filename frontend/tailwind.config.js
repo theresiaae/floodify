@@ -4,7 +4,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Biru — kedalaman air, kepercayaan, data
+        // Biru / deep teal — kedalaman air, kepercayaan, data
         deep: {
           950: '#04202c',
           900: '#0a3040',
@@ -16,6 +16,7 @@ export default {
           300: '#96d3dd',
           200: '#c9e9ed',
           100: '#e8f5f6',
+          50: '#f3fafb',
         },
         // Hijau sage — daratan, vegetasi, mitigasi
         sage: {
@@ -28,6 +29,7 @@ export default {
           300: '#cddaca',
           200: '#e3ebe0',
           100: '#f1f5ef',
+          50: '#f8faf7',
         },
         sand: '#f6f4ee',
         alert: {
@@ -42,7 +44,7 @@ export default {
         mono: ['"IBM Plex Mono"', 'monospace'],
       },
       backgroundImage: {
-        'topo': "radial-gradient(circle at 1px 1px, rgba(15,76,92,0.08) 1px, transparent 0)",
+        'topo': "radial-gradient(circle at 1px 1px, rgba(15,76,92,0.09) 1px, transparent 0)",
       },
     },
   },
