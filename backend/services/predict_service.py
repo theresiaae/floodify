@@ -47,19 +47,19 @@ def predict(raw_values: dict) -> dict:
     proba = model.predict_proba(features)[0]
     pred_class = model.predict(features)[0]
 
-    # Asumsi label: 1 (atau "Rawan Banjir") = kelas rawan banjir.
+    # Asumsi label: 1 (atau "Banjir") = kelas rawan banjir.
     classes = list(model.classes_)
     if 1 in classes:
         flood_index = classes.index(1)
-    elif "Rawan Banjir" in classes:
-        flood_index = classes.index("Rawan Banjir")
+    elif "Banjir" in classes:
+        flood_index = classes.index("Banjir")
     else:
         flood_index = int(np.argmax(proba))
 
     probability = round(float(proba[flood_index]) * 100, 1)
     is_flood_prone = pred_class == classes[flood_index]
 
-    status = "Rawan Banjir" if is_flood_prone else "Aman"
+    status = "Banjir" if is_flood_prone else "Tidak Banjir"
 
     return {
         "status": status,
