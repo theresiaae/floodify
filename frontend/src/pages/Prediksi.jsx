@@ -165,7 +165,7 @@ export default function Prediksi() {
     }
   }
 
-  const level = result ? levelFromStatus(result.status) : 'aman'
+  const level = result ? levelFromStatus(result.status) : 'tidak_banjir'
   const isFutureDate = date > TODAY_STR
 
   return (
@@ -386,7 +386,7 @@ export default function Prediksi() {
                   className="font-display text-xl sm:text-2xl font-semibold"
                   style={{
                     color:
-                      level === 'rawan' ? '#c1543a' : level === 'waspada' ? '#d99a3c' : '#4d8f6f',
+                      level === 'banjir' ? '#c1543a' : '#4d8f6f',
                   }}
                 >
                   {result.status}
