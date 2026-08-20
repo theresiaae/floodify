@@ -56,6 +56,7 @@ export default function Prediksi() {
   const [loadingPredict, setLoadingPredict] = useState(false)
   const [locating, setLocating] = useState(false)
   const [result, setResult] = useState(null)
+  const [error, setError] = useState(null)
   const [outsideWarning, setOutsideWarning] = useState(false)
   const warningTimer = useRef(null)
 
