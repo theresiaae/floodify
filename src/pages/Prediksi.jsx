@@ -56,9 +56,24 @@ export default function Prediksi() {
   const [loadingPredict, setLoadingPredict] = useState(false)
   const [locating, setLocating] = useState(false)
   const [result, setResult] = useState(null)
-  const [error, setError] = useState(null)
   const [outsideWarning, setOutsideWarning] = useState(false)
   const warningTimer = useRef(null)
+
+  const handleDateChange = useCallback((rawVal) => {
+    if (!rawVal) return
+    if (rawVal > MAX_DATE_STR) {
+      setDate(MAX_DATE_STR)
+      setError(`Batas forecast cuaca maksimal 15 hari ke depan (${MAX_DATE_STR}). Tanggal otomatis disesuaikan.`)
+      return
+    }
+    if (rawVal < MIN_DATE_STR) {
+      setDate(MIN_DATE_STR)
+      setError(`Batas data historis minimal adalah ${MIN_DATE_STR}. Tanggal otomatis disesuaikan.`)
+      return
+    }
+    setError(null)
+    setDate(rawVal)
+  }, [])
 
   const handleSelect = useCallback((lat, lng) => {
     setPosition({ lat, lng })
@@ -228,7 +243,7 @@ export default function Prediksi() {
               value={date}
               min={MIN_DATE_STR}
               max={MAX_DATE_STR}
-              onChange={(e) => setDate(e.target.value)}
+              onChange={(e) => handleDateChange(e.target.value)}
               className="w-full bg-transparent font-mono text-base font-medium text-deep-900 outline-none"
             />
           </label>

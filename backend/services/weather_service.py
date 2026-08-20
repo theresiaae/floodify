@@ -26,7 +26,15 @@ def _today() -> date:
 
 def get_rainfall(lat: float, lng: float, target_date: date | None = None) -> float:
     today = _today()
+    max_forecast_date = date.fromordinal(today.toordinal() + MAX_FORECAST_DAYS_AHEAD)
+    min_historical_date = date(2015, 1, 1)
+
     query_date = target_date or today
+    if query_date > max_forecast_date:
+        query_date = max_forecast_date
+    elif query_date < min_historical_date:
+        query_date = min_historical_date
+
     date_str = query_date.strftime("%Y-%m-%d")
 
     # 1. Coba Visual Crossing jika API key tersedia di Environment Variables
