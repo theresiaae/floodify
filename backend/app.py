@@ -160,14 +160,35 @@ def predict_route():
 @app.route("/assets/<path:filename>")
 def serve_assets(filename):
     assets_dir = os.path.join(_DIST_DIR, "assets")
-    return send_from_directory(assets_dir, filename)
+    target = os.path.join(assets_dir, filename)
+    if not os.path.isfile(target):
+        ext = filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
+        if os.path.isdir(assets_dir):
+            for f in os.listdir(assets_dir):
+                if f.endswith(f".{ext}"):
+                    resp = send_from_directory(assets_dir, f)
+                    if ext == "js":
+                        resp.headers["Content-Type"] = "text/javascript; charset=utf-8"
+                    elif ext == "css":
+                        resp.headers["Content-Type"] = "text/css; charset=utf-8"
+                    return resp
+    resp = send_from_directory(assets_dir, filename)
+    if filename.endswith(".js"):
+        resp.headers["Content-Type"] = "text/javascript; charset=utf-8"
+    elif filename.endswith(".css"):
+        resp.headers["Content-Type"] = "text/css; charset=utf-8"
+    return resp
 
 
 @app.route("/")
 def index():
     index_file = os.path.join(_DIST_DIR, "index.html")
     if os.path.isfile(index_file):
-        return send_from_directory(_DIST_DIR, "index.html")
+        resp = send_from_directory(_DIST_DIR, "index.html")
+        resp.headers["Cache-Control"] = "no-cache, no-store, must-revalidate"
+        resp.headers["Pragma"] = "no-cache"
+        resp.headers["Expires"] = "0"
+        return resp
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
