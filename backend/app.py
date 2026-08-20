@@ -168,18 +168,20 @@ def index():
 
 @app.route("/<path:filename>", methods=["GET", "POST"])
 def serve_static(filename):
-    clean = filename.strip("/")
-    req_path = request.path
+    clean = filename.strip("/").lower()
+    req_path = request.path.lower()
+    query_p = request.args.get("path", "").lower()
+    raw = f"{clean} {req_path} {query_p}"
 
     if request.method == "POST":
-        if "param" in clean or "param" in req_path:
+        if "param" in raw:
             return parameters()
-        if "pred" in clean or "pred" in req_path:
+        if "pred" in raw:
             return predict_route()
-        return jsonify({"error": "Endpoint POST tidak ditemukan."}), 404
+        return jsonify({"error": "Endpoint POST tidak ditemukan.", "received": raw}), 404
 
     # GET requests
-    if "health" in clean or clean in ["api", "api/index", "api/index.py"]:
+    if "health" in raw or clean in ["api", "api/index", "api/index.py"]:
         return health()
 
     target = os.path.join(_DIST_DIR, filename)
