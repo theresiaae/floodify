@@ -73,12 +73,14 @@ def _fetch_values(lat, lng, target_date):
     return {**gee_values, "curah_hujan": rainfall}
 
 
-@app.get("/api/health")
+@app.route("/api/health", methods=["GET"])
+@app.route("/health", methods=["GET"])
 def health():
     return jsonify({"status": "ok"})
 
 
-@app.post("/api/parameters")
+@app.route("/api/parameters", methods=["POST"])
+@app.route("/parameters", methods=["POST"])
 def parameters():
     """
     Mengambil lima parameter untuk satu titik koordinat pada tanggal
@@ -105,7 +107,8 @@ def parameters():
     return jsonify({"ready": True, "parameters": values})
 
 
-@app.post("/api/predict")
+@app.route("/api/predict", methods=["POST"])
+@app.route("/predict", methods=["POST"])
 def predict_route():
     lat, lng, target_date, error = _validate_request()
     if error:
