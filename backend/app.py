@@ -88,10 +88,10 @@ def _validate_request():
 
 
 def _fetch_values(lat, lng, target_date):
-    gee_values = get_gee_parameters(lat, lng, target_date=target_date)
+    rainfall = get_rainfall(lat, lng, target_date=target_date)
+    gee_values = get_gee_parameters(lat, lng, target_date=target_date, rainfall=rainfall)
     if not isinstance(gee_values, dict):
         gee_values = {}
-    rainfall = get_rainfall(lat, lng, target_date=target_date)
     return {**gee_values, "curah_hujan": rainfall}
 
 

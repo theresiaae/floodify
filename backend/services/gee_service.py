@@ -115,7 +115,7 @@ def _get_soil_moisture(point, end_date: str):
     ).get("volumetric_soil_water_layer_1")
 
 
-def _estimate_denpasar_parameters(lat: float, lng: float) -> dict:
+def _estimate_denpasar_parameters(lat: float, lng: float, rainfall: float = 0.0) -> dict:
     """Estimator spasial topografi Denpasar jika GEE cloud credentials belum aktif."""
     norm_y = max(0.0, min(1.0, (-8.58 - lat) / (-8.58 - (-8.73))))
     elevasi = round(max(2.0, 48.0 - (norm_y * 44.0) + (lng - 115.21) * 10.0), 1)
@@ -123,7 +123,14 @@ def _estimate_denpasar_parameters(lat: float, lng: float) -> dict:
     if lat > -8.62:
         tutupan_lahan = 40
     ndvi = round(0.28 + (1.0 - norm_y) * 0.12, 2)
-    kelembapan_tanah = round(0.32 + norm_y * 0.08, 2)
+
+    # Kelembapan tanah dinamis: berkorelasi realistis dengan curah hujan
+    # Hari cerah/kering (< 1 mm hujan) = 0.20 - 0.23 (tanah normal kering)
+    # Hujan sedang-lebat = 0.28 - 0.40 (tanah basah jenuh air)
+    rain_effect = min(0.18, (max(0.0, float(rainfall)) / 100.0) * 0.24)
+    base_moisture = 0.20 + (norm_y * 0.03)
+    kelembapan_tanah = round(base_moisture + rain_effect, 2)
+
     return {
         "elevasi": elevasi,
         "tutupan_lahan": tutupan_lahan,
@@ -132,8 +139,8 @@ def _estimate_denpasar_parameters(lat: float, lng: float) -> dict:
     }
 
 
-def get_gee_parameters(lat: float, lng: float, target_date=None) -> dict:
-    fallback = _estimate_denpasar_parameters(lat, lng)
+def get_gee_parameters(lat: float, lng: float, target_date=None, rainfall: float = 0.0) -> dict:
+    fallback = _estimate_denpasar_parameters(lat, lng, rainfall=rainfall)
     try:
         _initialize()
         point = ee.Geometry.Point([lng, lat])
