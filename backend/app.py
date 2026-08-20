@@ -147,43 +147,11 @@ def predict_route():
     return jsonify({**result, "parameters": values})
 
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>", methods=["GET", "POST"])
-def catch_all(path):
-    clean = path.strip("/")
-
-    # Tangani endpoint API terlebih dahulu jika rute spesifik terlewati
-    if clean in ["api/parameters", "parameters"]:
-        return parameters()
-    if clean in ["api/predict", "predict"]:
-        return predict_route()
-    if clean in ["api/health", "health", "api"]:
-        return health()
-
-    # Bersihkan prefix Vercel jika ada (misal: 'api/index.py/' atau 'api/')
-    if clean.startswith("api/index.py/"):
-        clean = clean[len("api/index.py/"):]
-    elif clean.startswith("api/"):
-        if clean.startswith("api/assets/"):
-            clean = clean[4:]
-
-    # Cek jika mencari file aset dalam assets/
-    if "assets/" in clean:
-        asset_rel = clean[clean.find("assets/"):]
-        target = os.path.join(_FRONTEND_DIST, asset_rel)
-        if os.path.isfile(target):
-            return send_from_directory(_FRONTEND_DIST, asset_rel)
-
-    # Cek file statis umum (favicon.ico, manifest, dll)
-    direct_target = os.path.join(_FRONTEND_DIST, clean)
-    if clean and os.path.isfile(direct_target):
-        return send_from_directory(_FRONTEND_DIST, clean)
-
-    # Sajikan index.html untuk seluruh rute halaman frontend (SPA)
-    index_path = os.path.join(_FRONTEND_DIST, "index.html")
-    if os.path.isfile(index_path):
-        return send_from_directory(_FRONTEND_DIST, "index.html")
-
+@app.route("/", methods=["GET"])
+@app.route("/api", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
+@app.route("/health", methods=["GET"])
+def health():
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
