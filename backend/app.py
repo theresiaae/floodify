@@ -93,51 +93,16 @@ def _fetch_values(lat, lng, target_date):
 _DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"))
 
 
-@app.route("/api", methods=["GET"])
 @app.route("/api/health", methods=["GET"])
+@app.route("/api", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok", "message": "Floodify API is running"})
-
-
-@app.route("/assets/<path:filename>")
-def serve_assets(filename):
-    assets_dir = os.path.join(_DIST_DIR, "assets")
-    return send_from_directory(assets_dir, filename)
-
-
-@app.route("/")
-def index():
-    index_file = os.path.join(_DIST_DIR, "index.html")
-    if os.path.isfile(index_file):
-        return send_from_directory(_DIST_DIR, "index.html")
-    return jsonify({"status": "ok", "message": "Floodify API is running"})
-
-
-@app.route("/<path:filename>")
-def serve_static(filename):
-    if filename.startswith("api/"):
-        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
-    target = os.path.join(_DIST_DIR, filename)
-    if os.path.isfile(target):
-        return send_from_directory(_DIST_DIR, filename)
-    index_file = os.path.join(_DIST_DIR, "index.html")
-    if os.path.isfile(index_file):
-        return send_from_directory(_DIST_DIR, "index.html")
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 @app.route("/api/parameters", methods=["POST"])
 @app.route("/parameters", methods=["POST"])
 def parameters():
-    """
-    Mengambil lima parameter untuk satu titik koordinat pada tanggal
-    tertentu: elevasi, tutupan lahan, NDVI, kelembapan tanah (Google Earth
-    Engine) dan curah hujan (Visual Crossing Weather API — historis, hari
-    ini, atau forecast beberapa hari ke depan).
-    Nilainya di-cache di server dan dikembalikan ke frontend untuk
-    menampilkan informasi parameter lingkungan lokasi terpilih.
-    """
     lat, lng, target_date, error = _validate_request()
     if error:
         return error
@@ -166,7 +131,6 @@ def predict_route():
     values = _param_cache.get(key)
 
     if values is None:
-        # Titik/tanggal ini belum pernah diambil parameternya lewat /parameters.
         try:
             values = _fetch_values(lat, lng, target_date)
         except ValueError as e:
@@ -187,6 +151,33 @@ def predict_route():
         return jsonify({"error": "Gagal menjalankan model prediksi."}), 500
 
     return jsonify({**result, "parameters": values})
+
+
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    assets_dir = os.path.join(_DIST_DIR, "assets")
+    return send_from_directory(assets_dir, filename)
+
+
+@app.route("/")
+def index():
+    index_file = os.path.join(_DIST_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return send_from_directory(_DIST_DIR, "index.html")
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
+
+
+@app.route("/<path:filename>")
+def serve_static(filename):
+    if filename.startswith("api/"):
+        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
+    target = os.path.join(_DIST_DIR, filename)
+    if os.path.isfile(target):
+        return send_from_directory(_DIST_DIR, filename)
+    index_file = os.path.join(_DIST_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return send_from_directory(_DIST_DIR, "index.html")
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 if __name__ == "__main__":
