@@ -90,14 +90,40 @@ def _validate_request():
 def _fetch_values(lat, lng, target_date):
     gee_values = get_gee_parameters(lat, lng, target_date=target_date)
     rainfall = get_rainfall(lat, lng, target_date=target_date)
-    return {**gee_values, "curah_hujan": rainfall}
+_DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"))
 
 
-@app.route("/", methods=["GET"])
 @app.route("/api", methods=["GET"])
 @app.route("/api/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
+
+
+@app.route("/assets/<path:filename>")
+def serve_assets(filename):
+    assets_dir = os.path.join(_DIST_DIR, "assets")
+    return send_from_directory(assets_dir, filename)
+
+
+@app.route("/")
+def index():
+    index_file = os.path.join(_DIST_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return send_from_directory(_DIST_DIR, "index.html")
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
+
+
+@app.route("/<path:filename>")
+def serve_static(filename):
+    if filename.startswith("api/"):
+        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
+    target = os.path.join(_DIST_DIR, filename)
+    if os.path.isfile(target):
+        return send_from_directory(_DIST_DIR, filename)
+    index_file = os.path.join(_DIST_DIR, "index.html")
+    if os.path.isfile(index_file):
+        return send_from_directory(_DIST_DIR, "index.html")
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
