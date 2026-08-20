@@ -147,27 +147,43 @@ def predict_route():
     return jsonify({**result, "parameters": values})
 
 
-@app.route("/assets/<path:filename>")
-@app.route("/api/assets/<path:filename>")
-def serve_assets(filename):
-    assets_dir = os.path.join(_FRONTEND_DIST, "assets")
-    return send_from_directory(assets_dir, filename)
-
-
-@app.route("/favicon.ico")
-@app.route("/vite.svg")
-def serve_icons():
-    icon_name = request.path.strip("/")
-    if os.path.exists(os.path.join(_FRONTEND_DIST, icon_name)):
-        return send_from_directory(_FRONTEND_DIST, icon_name)
-    return "", 204
-
-
 @app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve_spa(path):
-    if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
+@app.route("/<path:path>", methods=["GET", "POST"])
+def catch_all(path):
+    clean = path.strip("/")
+
+    # Tangani endpoint API terlebih dahulu jika rute spesifik terlewati
+    if clean in ["api/parameters", "parameters"]:
+        return parameters()
+    if clean in ["api/predict", "predict"]:
+        return predict_route()
+    if clean in ["api/health", "health", "api"]:
+        return health()
+
+    # Bersihkan prefix Vercel jika ada (misal: 'api/index.py/' atau 'api/')
+    if clean.startswith("api/index.py/"):
+        clean = clean[len("api/index.py/"):]
+    elif clean.startswith("api/"):
+        if clean.startswith("api/assets/"):
+            clean = clean[4:]
+
+    # Cek jika mencari file aset dalam assets/
+    if "assets/" in clean:
+        asset_rel = clean[clean.find("assets/"):]
+        target = os.path.join(_FRONTEND_DIST, asset_rel)
+        if os.path.isfile(target):
+            return send_from_directory(_FRONTEND_DIST, asset_rel)
+
+    # Cek file statis umum (favicon.ico, manifest, dll)
+    direct_target = os.path.join(_FRONTEND_DIST, clean)
+    if clean and os.path.isfile(direct_target):
+        return send_from_directory(_FRONTEND_DIST, clean)
+
+    # Sajikan index.html untuk seluruh rute halaman frontend (SPA)
+    index_path = os.path.join(_FRONTEND_DIST, "index.html")
+    if os.path.isfile(index_path):
         return send_from_directory(_FRONTEND_DIST, "index.html")
+
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
