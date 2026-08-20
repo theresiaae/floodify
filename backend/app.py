@@ -76,10 +76,12 @@ def _fetch_values(lat, lng, target_date):
     return {**gee_values, "curah_hujan": rainfall}
 
 
+@app.route("/", methods=["GET"])
+@app.route("/api", methods=["GET"])
 @app.route("/api/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "ok"})
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 @app.route("/api/parameters", methods=["POST"])
@@ -142,14 +144,6 @@ def predict_route():
         return jsonify({"error": "Gagal menjalankan model prediksi."}), 500
 
     return jsonify({**result, "parameters": values})
-
-
-@app.route("/", methods=["GET"])
-@app.route("/api", methods=["GET"])
-@app.route("/api/health", methods=["GET"])
-@app.route("/health", methods=["GET"])
-def health():
-    return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 if __name__ == "__main__":
