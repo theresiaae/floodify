@@ -36,13 +36,20 @@ def _initialize():
             return
         service_account = os.environ.get("GEE_SERVICE_ACCOUNT_EMAIL")
         key_path = os.environ.get("GEE_SERVICE_ACCOUNT_KEY_PATH")
+        key_json = os.environ.get("GEE_SERVICE_ACCOUNT_KEY_JSON") or os.environ.get("GEE_SERVICE_ACCOUNT_PRIVATE_KEY")
         # Wajib sejak GEE mengharuskan tiap request terhubung ke Cloud Project
         # terdaftar. Isi dengan Project ID hasil registrasi di
         # https://code.earthengine.google.com/register
         project_id = os.environ.get("GEE_PROJECT_ID")
 
-        if service_account and key_path:
-            credentials = ee.ServiceAccountCredentials(service_account, key_path)
+        if key_json:
+            credentials = ee.ServiceAccountCredentials(service_account or "", key_data=key_json)
+            ee.Initialize(credentials, project=project_id)
+        elif service_account and key_path and os.path.exists(key_path):
+            credentials = ee.ServiceAccountCredentials(service_account, key_file=key_path)
+            ee.Initialize(credentials, project=project_id)
+        elif service_account and key_path:
+            credentials = ee.ServiceAccountCredentials(service_account, key_data=key_path)
             ee.Initialize(credentials, project=project_id)
         else:
             # Memakai Application Default Credentials hasil `earthengine authenticate`

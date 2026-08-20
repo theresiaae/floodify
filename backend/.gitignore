@@ -1,6 +1,11 @@
 __pycache__/
 *.pyc
+*.pyo
 .env
-model/*.pkl
+.env.*
+*.pem
 gee-service-account-key.json
+*.json
+!data/denpasar_boundary.json
 venv/
+.venv/

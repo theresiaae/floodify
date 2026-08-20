@@ -1,0 +1,35 @@
+# Environment Variables & Secrets (100% Dilindungi dari Bocor)
+.env
+.env.*
+*.env
+backend/.env
+frontend/.env
+*.pem
+gee-service-account-key.json
+
+# Python Virtual Environments & Caches
+__pycache__/
+*.py[cod]
+*$py.class
+backend/venv/
+venv/
+.venv/
+
+# Node Modules & Build Artifacts
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+.vite/
+
+# Large Datasets & Scratch Logs
+*.xlsx
+*.parquet
+*.csv
+*.log
+
+# OS & Editor Specific
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
