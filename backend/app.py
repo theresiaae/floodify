@@ -19,10 +19,25 @@ from services.predict_service import predict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("floodify")
 
-_FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
+import traceback
 
 app = Flask(__name__)
 CORS(app)
+
+
+@app.errorhandler(Exception)
+def handle_exception(e):
+    logger.exception("Unhandled error: %s", e)
+    return (
+        jsonify(
+            {
+                "error": "Internal Server Error",
+                "detail": str(e),
+                "traceback": traceback.format_exc(),
+            }
+        ),
+        500,
+    )
 
 # Cache sementara in-memory: {(lat, lng, date): {parameter: value, ...}}
 # Dipakai supaya endpoint /predict tidak perlu memanggil ulang GEE + VisualCrossing
