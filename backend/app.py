@@ -5,7 +5,11 @@ from datetime import date, datetime
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 
-load_dotenv()
+try:
+    from dotenv import load_dotenv
+    load_dotenv()
+except ImportError:
+    pass
 
 from services.boundary_service import is_inside_denpasar
 from services.gee_service import get_gee_parameters
