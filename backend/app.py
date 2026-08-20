@@ -76,7 +76,6 @@ def _fetch_values(lat, lng, target_date):
     return {**gee_values, "curah_hujan": rainfall}
 
 
-@app.route("/", methods=["GET"])
 @app.route("/api", methods=["GET"])
 @app.route("/api/health", methods=["GET"])
 @app.route("/health", methods=["GET"])
