@@ -147,28 +147,27 @@ def predict_route():
     return jsonify({**result, "parameters": values})
 
 
+@app.route("/assets/<path:filename>")
+@app.route("/api/assets/<path:filename>")
+def serve_assets(filename):
+    assets_dir = os.path.join(_FRONTEND_DIST, "assets")
+    return send_from_directory(assets_dir, filename)
+
+
+@app.route("/favicon.ico")
+@app.route("/vite.svg")
+def serve_icons():
+    icon_name = request.path.strip("/")
+    if os.path.exists(os.path.join(_FRONTEND_DIST, icon_name)):
+        return send_from_directory(_FRONTEND_DIST, icon_name)
+    return "", 204
+
+
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
-def serve_frontend(path):
-    clean_path = path.strip("/")
-
-    # Permintaan root / entrypoint Vercel -> sajikan index.html
-    if clean_path in ["api", "api/index", "api/index.py", "index.py", "index.html", ""]:
-        if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
-            return send_from_directory(_FRONTEND_DIST, "index.html")
-
-    # Jika request mencari file aset statis (misal assets/index-xxx.js)
-    if clean_path.startswith("api/assets/"):
-        clean_path = clean_path[4:]  # potong 'api/'
-
-    target_file = os.path.join(_FRONTEND_DIST, clean_path)
-    if clean_path and os.path.exists(target_file) and not os.path.isdir(target_file):
-        return send_from_directory(_FRONTEND_DIST, clean_path)
-
-    # Fallback untuk routing client-side (SPA)
+def serve_spa(path):
     if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
         return send_from_directory(_FRONTEND_DIST, "index.html")
-
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
