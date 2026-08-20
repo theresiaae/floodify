@@ -96,12 +96,15 @@ _DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"
 @app.route("/api/health", methods=["GET"])
 @app.route("/api", methods=["GET"])
 @app.route("/health", methods=["GET"])
+@app.route("/api/index.py", methods=["GET"])
+@app.route("/api/index", methods=["GET"])
 def health():
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 @app.route("/api/parameters", methods=["POST"])
 @app.route("/parameters", methods=["POST"])
+@app.route("/api/index.py/parameters", methods=["POST"])
 def parameters():
     lat, lng, target_date, error = _validate_request()
     if error:
@@ -122,6 +125,7 @@ def parameters():
 
 @app.route("/api/predict", methods=["POST"])
 @app.route("/predict", methods=["POST"])
+@app.route("/api/index.py/predict", methods=["POST"])
 def predict_route():
     lat, lng, target_date, error = _validate_request()
     if error:
@@ -167,10 +171,18 @@ def index():
     return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
-@app.route("/<path:filename>")
+@app.route("/<path:filename>", methods=["GET", "POST"])
 def serve_static(filename):
-    if filename.startswith("api/"):
+    clean = filename.strip("/")
+    if "parameters" in clean:
+        return parameters()
+    if "predict" in clean:
+        return predict_route()
+    if "health" in clean or clean in ["api", "api/index.py", "api/index", ""]:
+        return health()
+    if clean.startswith("api/"):
         return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
+
     target = os.path.join(_DIST_DIR, filename)
     if os.path.isfile(target):
         return send_from_directory(_DIST_DIR, filename)
