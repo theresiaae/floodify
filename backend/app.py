@@ -145,9 +145,9 @@ def predict_route():
 
     try:
         result = predict(values)
-    except Exception:
-        logger.exception("Gagal menjalankan model prediksi")
-        return jsonify({"error": "Gagal menjalankan model prediksi."}), 500
+    except Exception as e:
+        logger.exception("Gagal menjalankan model prediksi: %s", e)
+        return jsonify({"error": f"Gagal menjalankan model prediksi: {str(e)}"}), 500
 
     return jsonify({**result, "parameters": values})
 

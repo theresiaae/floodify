@@ -2,40 +2,53 @@
 Menjalankan model Random Forest (hasil skripsi) untuk memprediksi status
 risiko banjir dari lima parameter: curah_hujan, elevasi, tutupan_lahan,
 ndvi, kelembapan_tanah.
-
-tutupan_lahan dipakai langsung sebagai kode kelas ESA WorldCover (mis. 10 =
-Tree cover, 40 = Cropland, 50 = Built-up, dst — lihat dokumentasi ESA
-WorldCover v200), karena model dilatih memakai sumber yang sama.
 """
 
+import logging
 import os
 
 import joblib
 import numpy as np
 import pandas as pd
 
-_MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "model", "model_rf_baseline.pkl")
+logger = logging.getLogger("floodify.predict")
 
-# Urutan fitur harus SAMA PERSIS dengan urutan kolom saat training di Colab.
 FEATURE_ORDER = ["curah_hujan", "elevasi", "tutupan_lahan", "ndvi", "kelembapan_tanah"]
 
 _model = None
 
 
+def _get_model_path():
+    candidates = [
+        os.path.join(os.path.dirname(__file__), "..", "model", "model_rf_baseline.pkl"),
+        os.path.join(os.path.dirname(__file__), "..", "..", "backend", "model", "model_rf_baseline.pkl"),
+        os.path.join(os.getcwd(), "backend", "model", "model_rf_baseline.pkl"),
+        os.path.join(os.getcwd(), "model", "model_rf_baseline.pkl"),
+    ]
+    for c in candidates:
+        abs_c = os.path.abspath(c)
+        if os.path.isfile(abs_c):
+            return abs_c
+    return os.path.abspath(candidates[0])
+
+
 def _load_model():
     global _model
     if _model is None:
-        _model = joblib.load(_MODEL_PATH)
+        model_path = _get_model_path()
+        if not os.path.isfile(model_path):
+            raise FileNotFoundError(f"Model file not found at: {model_path}")
+        _model = joblib.load(model_path)
     return _model
 
 
 def _prepare_features(raw_values: dict) -> pd.DataFrame:
     row = {
-        "curah_hujan": raw_values.get("curah_hujan"),
-        "elevasi": raw_values.get("elevasi"),
-        "tutupan_lahan": raw_values.get("tutupan_lahan"),
-        "ndvi": raw_values.get("ndvi"),
-        "kelembapan_tanah": raw_values.get("kelembapan_tanah"),
+        "curah_hujan": float(raw_values.get("curah_hujan") if raw_values.get("curah_hujan") is not None else 0.0),
+        "elevasi": float(raw_values.get("elevasi") if raw_values.get("elevasi") is not None else 20.0),
+        "tutupan_lahan": int(raw_values.get("tutupan_lahan") if raw_values.get("tutupan_lahan") is not None else 50),
+        "ndvi": float(raw_values.get("ndvi") if raw_values.get("ndvi") is not None else 0.3),
+        "kelembapan_tanah": float(raw_values.get("kelembapan_tanah") if raw_values.get("kelembapan_tanah") is not None else 0.35),
     }
     return pd.DataFrame([row], columns=FEATURE_ORDER)
 
@@ -47,7 +60,6 @@ def predict(raw_values: dict) -> dict:
     proba = model.predict_proba(features)[0]
     pred_class = model.predict(features)[0]
 
-    # Asumsi label: 1 (atau "Banjir") = kelas rawan banjir.
     classes = list(model.classes_)
     if 1 in classes:
         flood_index = classes.index(1)
