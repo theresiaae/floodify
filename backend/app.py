@@ -150,13 +150,22 @@ def predict_route():
 @app.route("/", defaults={"path": ""})
 @app.route("/<path:path>")
 def serve_frontend(path):
-    if path.startswith("api"):
-        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
+    clean_path = path.strip("/")
 
-    target_file = os.path.join(_FRONTEND_DIST, path)
-    if path and os.path.exists(target_file) and not os.path.isdir(target_file):
-        return send_from_directory(_FRONTEND_DIST, path)
+    # Permintaan root / entrypoint Vercel -> sajikan index.html
+    if clean_path in ["api", "api/index", "api/index.py", "index.py", "index.html", ""]:
+        if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
+            return send_from_directory(_FRONTEND_DIST, "index.html")
 
+    # Jika request mencari file aset statis (misal assets/index-xxx.js)
+    if clean_path.startswith("api/assets/"):
+        clean_path = clean_path[4:]  # potong 'api/'
+
+    target_file = os.path.join(_FRONTEND_DIST, clean_path)
+    if clean_path and os.path.exists(target_file) and not os.path.isdir(target_file):
+        return send_from_directory(_FRONTEND_DIST, clean_path)
+
+    # Fallback untuk routing client-side (SPA)
     if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
         return send_from_directory(_FRONTEND_DIST, "index.html")
 
