@@ -42,7 +42,9 @@ def _load_model():
     return _model
 
 
-def _prepare_features(raw_values: dict) -> pd.DataFrame:
+def _prepare_features(raw_values: dict | None) -> pd.DataFrame:
+    if not isinstance(raw_values, dict):
+        raw_values = {}
     row = {
         "curah_hujan": float(raw_values.get("curah_hujan") if raw_values.get("curah_hujan") is not None else 0.0),
         "elevasi": float(raw_values.get("elevasi") if raw_values.get("elevasi") is not None else 20.0),

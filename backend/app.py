@@ -89,7 +89,12 @@ def _validate_request():
 
 def _fetch_values(lat, lng, target_date):
     gee_values = get_gee_parameters(lat, lng, target_date=target_date)
+    if not isinstance(gee_values, dict):
+        gee_values = {}
     rainfall = get_rainfall(lat, lng, target_date=target_date)
+    return {**gee_values, "curah_hujan": rainfall}
+
+
 _DIST_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "dist"))
 
 

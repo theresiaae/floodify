@@ -133,6 +133,7 @@ def _estimate_denpasar_parameters(lat: float, lng: float) -> dict:
 
 
 def get_gee_parameters(lat: float, lng: float, target_date=None) -> dict:
+    fallback = _estimate_denpasar_parameters(lat, lng)
     try:
         _initialize()
         point = ee.Geometry.Point([lng, lat])
@@ -152,11 +153,13 @@ def get_gee_parameters(lat: float, lng: float, target_date=None) -> dict:
             "kelembapan_tanah": _get_soil_moisture(point, soil_end),
         }).getInfo()
 
-        fallback = _estimate_denpasar_parameters(lat, lng)
+        if not isinstance(values, dict):
+            return fallback
+
         for k, v in fallback.items():
             if values.get(k) is None:
                 values[k] = v
         return values
     except Exception as e:
         logger.warning("GEE offline/unauthenticated (%s). Using spatial model parameters.", e)
-        return _estimate_denpasar_parameters(lat, lng)
+        return fallback
