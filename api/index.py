@@ -1,36 +1,16 @@
 import os
 import sys
-import traceback
 
-current_dir = os.path.dirname(os.path.abspath(__file__))
-root_dir = os.path.abspath(os.path.join(current_dir, ".."))
-backend_dir = os.path.join(root_dir, "backend")
+# Tambahkan path backend ke sys.path
+backend_dir = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "backend"))
+if backend_dir not in sys.path:
+    sys.path.insert(0, backend_dir)
 
-for p in [backend_dir, root_dir]:
-    if p not in sys.path:
-        sys.path.insert(0, p)
+from app import app
 
-try:
-    from app import app
-except Exception as err:
-    tb = traceback.format_exc()
-    from flask import Flask, jsonify
-
-    app = Flask(__name__)
-
-    @app.route("/", defaults={"path": ""})
-    @app.route("/<path:path>")
-    def startup_error(path):
-        return (
-            jsonify(
-                {
-                    "error": "Serverless Startup Error",
-                    "detail": str(err),
-                    "traceback": tb,
-                }
-            ),
-            500,
-        )
+# Expose top-level WSGI variables untuk Vercel Serverless Function
+application = app
+handler = app
 
 if __name__ == "__main__":
     app.run()
