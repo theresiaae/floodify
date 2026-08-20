@@ -15,11 +15,9 @@ backend/venv/
 venv/
 .venv/
 
-# Node Modules & Build Artifacts
+# Node Modules (Library lokal yang tidak perlu di-upload)
 node_modules/
 frontend/node_modules/
-dist/
-frontend/dist/
 .vite/
 
 # Large Datasets & Scratch Logs

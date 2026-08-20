@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import date, datetime
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, request, send_from_directory
 from flask_cors import CORS
 
 try:
@@ -18,6 +18,8 @@ from services.predict_service import predict
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("floodify")
+
+_FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
 
 app = Flask(__name__)
 CORS(app)
@@ -143,6 +145,22 @@ def predict_route():
         return jsonify({"error": "Gagal menjalankan model prediksi."}), 500
 
     return jsonify({**result, "parameters": values})
+
+
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve_frontend(path):
+    if path.startswith("api"):
+        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
+
+    target_file = os.path.join(_FRONTEND_DIST, path)
+    if path and os.path.exists(target_file) and not os.path.isdir(target_file):
+        return send_from_directory(_FRONTEND_DIST, path)
+
+    if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
+        return send_from_directory(_FRONTEND_DIST, "index.html")
+
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 if __name__ == "__main__":
