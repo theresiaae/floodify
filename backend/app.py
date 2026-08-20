@@ -2,7 +2,7 @@ import logging
 import os
 from datetime import date, datetime
 
-from flask import Flask, jsonify, request, send_from_directory
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 
 load_dotenv()
@@ -15,9 +15,7 @@ from services.predict_service import predict
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("floodify")
 
-_FRONTEND_DIST = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend", "dist"))
-
-app = Flask(__name__, static_folder=_FRONTEND_DIST, static_url_path="")
+app = Flask(__name__)
 CORS(app)
 
 # Cache sementara in-memory: {(lat, lng, date): {parameter: value, ...}}
@@ -142,19 +140,12 @@ def predict_route():
     return jsonify({**result, "parameters": values})
 
 
-@app.route("/", defaults={"path": ""})
-@app.route("/<path:path>")
-def serve_frontend(path):
-    if path.startswith("api"):
-        return jsonify({"error": "Endpoint API tidak ditemukan."}), 404
-
-    if path and os.path.exists(os.path.join(_FRONTEND_DIST, path)):
-        return send_from_directory(_FRONTEND_DIST, path)
-
-    if os.path.exists(os.path.join(_FRONTEND_DIST, "index.html")):
-        return send_from_directory(_FRONTEND_DIST, "index.html")
-
-    return jsonify({"status": "Floodify API is running"}), 200
+@app.route("/", methods=["GET"])
+@app.route("/api", methods=["GET"])
+@app.route("/api/health", methods=["GET"])
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok", "message": "Floodify API is running"})
 
 
 if __name__ == "__main__":
