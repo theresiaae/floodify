@@ -7,6 +7,8 @@ from flask_cors import CORS
 
 try:
     from dotenv import load_dotenv
+    load_dotenv(os.path.join(os.path.dirname(__file__), ".env"))
+    load_dotenv(os.path.join(os.path.dirname(__file__), "..", ".env"))
     load_dotenv()
 except ImportError:
     pass
