@@ -129,22 +129,52 @@ def _get_soil_moisture(point, end_date: str):
     ).get("volumetric_soil_water_layer_1")
 
 
+import math
+
+_DENPASAR_SRTM_ANCHORS = [
+    (-8.6000, 115.1900, 68.0),  # Ubung Kaja
+    (-8.6180, 115.2010, 61.9),  # Terminal Ubung
+    (-8.6300, 115.2300, 38.0),  # Peguyangan Timur
+    (-8.6400, 115.2050, 42.0),  # Padangsambian
+    (-8.6565, 115.2124, 28.0),  # Pasar Badung / Jl. Gajah Mada
+    (-8.6500, 115.2400, 22.0),  # Kesiman
+    (-8.6710, 115.2330, 11.0),  # Renon / Lapangan Puputan
+    (-8.6854, 115.2288, 7.3),   # Wisma Pandawa / Panjer
+    (-8.6950, 115.2100, 6.0),   # Pedungan
+    (-8.6950, 115.2620, 7.0),   # Sanur Pantai
+    (-8.7150, 115.2150, 3.5),   # Sidakarya / Pemogan
+    (-8.7300, 115.2250, 2.5),   # Serangan Pesisir Selatan
+]
+
+
 def _estimate_denpasar_parameters(lat: float, lng: float, rainfall: float = 0.0) -> dict:
     """Estimator spasial topografi Denpasar jika GEE cloud credentials belum aktif di server."""
-    # Gradien topografi alam Kota Denpasar dari Utara (Ubung ~40m) ke Selatan (Panjer ~7m, Pesisir ~2m)
+    # Interpolasi IDW berbasis dataset elevasi NASA SRTM 30m Kota Denpasar
+    weights = []
+    values = []
+    for alat, alng, a_elev in _DENPASAR_SRTM_ANCHORS:
+        d = math.sqrt((lat - alat) ** 2 + (lng - alng) ** 2)
+        if d < 1e-5:
+            elevasi = a_elev
+            break
+        w = 1.0 / (d ** 2.5)
+        weights.append(w)
+        values.append(a_elev * w)
+    else:
+        elevasi = round(sum(values) / sum(weights), 1)
+
     norm_y = max(0.0, min(1.0, (-8.58 - lat) / (-8.58 - (-8.73))))
-    elevasi = round(max(2.0, 42.0 * ((1.0 - norm_y) ** 1.8) + 2.2 + (lng - 115.21) * 4.0), 1)
     
     # Tutupan lahan: 50 (Lahan Terbangun) untuk Denpasar kota/selatan, 40 (Sawah) untuk utara
     tutupan_lahan = 50
     if lat > -8.62:
         tutupan_lahan = 40
         
-    # NDVI (Vegetasi): Area pemukiman padat / perkotaan ~0.15
-    ndvi = round(0.15 + (1.0 - norm_y) * 0.08, 2)
+    # NDVI (Vegetasi): Area pemukiman padat perkotaan ~0.15 - 0.20
+    ndvi = round(0.15 + (1.0 - norm_y) * 0.05, 2)
 
     # Kelembapan tanah: baseline ~15.1% saat cuaca normal, meningkat saat hujan
-    rain_effect = min(0.15, (max(0.0, float(rainfall)) / 100.0) * 0.20)
+    rain_effect = min(0.25, (max(0.0, float(rainfall)) / 100.0) * 0.35)
     kelembapan_tanah = round(0.151 + rain_effect, 3)
 
     return {
