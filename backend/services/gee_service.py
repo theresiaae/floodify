@@ -90,17 +90,15 @@ def _get_land_cover(point):
 
 
 def _get_ndvi(point, start_date: str, end_date: str):
-    def compute_ndvi(image):
-        nir = image.select("SR_B5").multiply(0.0000275).add(-0.2)
-        red = image.select("SR_B4").multiply(0.0000275).add(-0.2)
-        return nir.subtract(red).divide(nir.add(red)).rename("NDVI")
+    def _add_ndvi(image):
+        return image.normalizedDifference(["SR_B5", "SR_B4"]).rename("NDVI")
 
     collection = (
         ee.ImageCollection("LANDSAT/LC08/C02/T1_L2")
         .filterBounds(point)
         .filterDate(start_date, end_date)
         .map(_mask_landsat8_clouds)
-        .map(compute_ndvi)
+        .map(_add_ndvi)
     )
 
     composite = collection.median()
