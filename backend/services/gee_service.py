@@ -131,26 +131,65 @@ def _get_soil_moisture(point, end_date: str):
     ).get("volumetric_soil_water_layer_1")
 
 
-def get_gee_parameters(lat: float, lng: float, target_date=None, **kwargs) -> dict:
+def _estimate_denpasar_parameters(lat: float, lng: float, rainfall: float = 0.0) -> dict:
+    """Estimator spasial topografi Denpasar jika GEE cloud credentials belum aktif di server."""
+    # Gradien elevasi Kota Denpasar: Selatan (pesisir/Panjer) ~4-8m, Utara (Ubung) ~40m
+    norm_y = max(0.0, min(1.0, (-8.58 - lat) / (-8.58 - (-8.73))))
+    elevasi = round(max(3.0, 42.0 - (norm_y * 35.0) + (lng - 115.21) * 8.0), 1)
+    
+    # Tutupan lahan: 50 (Lahan Terbangun) untuk Denpasar kota/selatan, 40 (Sawah) untuk utara
+    tutupan_lahan = 50
+    if lat > -8.62:
+        tutupan_lahan = 40
+        
+    # NDVI (Vegetasi): Area pemukiman/perkotaan ~0.15 - 0.22
+    ndvi = round(0.15 + (1.0 - norm_y) * 0.10, 2)
+
+    # Kelembapan tanah: baseline ~15.1% saat cuaca normal, meningkat saat hujan
+    rain_effect = min(0.15, (max(0.0, float(rainfall)) / 100.0) * 0.20)
+    kelembapan_tanah = round(0.151 + rain_effect, 3)
+
+    return {
+        "elevasi": elevasi,
+        "tutupan_lahan": tutupan_lahan,
+        "ndvi": ndvi,
+        "kelembapan_tanah": kelembapan_tanah,
+    }
+
+
+def get_gee_parameters(lat: float, lng: float, target_date=None, rainfall: float = 0.0, **kwargs) -> dict:
     """
     Mengembalikan dict: elevasi, tutupan_lahan, ndvi, kelembapan_tanah.
+    Mencoba mengambil dari GEE live, jika server cloud belum terautentikasi maka
+    otomatis menggunakan estimasi spasial topografi Denpasar agar web tidak error 502.
     """
-    _initialize()
-    point = ee.Geometry.Point([lng, lat])
+    fallback = _estimate_denpasar_parameters(lat, lng, rainfall=rainfall)
+    try:
+        _initialize()
+        point = ee.Geometry.Point([lng, lat])
 
-    today = datetime.now(timezone.utc).date()
-    anchor = min(target_date, today) if target_date else today
-    anchor_dt = datetime(anchor.year, anchor.month, anchor.day, tzinfo=timezone.utc)
+        today = datetime.now(timezone.utc).date()
+        anchor = min(target_date, today) if target_date else today
+        anchor_dt = datetime(anchor.year, anchor.month, anchor.day, tzinfo=timezone.utc)
 
-    ndvi_start = _date_str(anchor_dt - timedelta(days=NDVI_LOOKBACK_DAYS))
-    ndvi_end = _date_str(anchor_dt + timedelta(days=1))
-    soil_end = _date_str(anchor_dt + timedelta(days=1))
+        ndvi_start = _date_str(anchor_dt - timedelta(days=NDVI_LOOKBACK_DAYS))
+        ndvi_end = _date_str(anchor_dt + timedelta(days=1))
+        soil_end = _date_str(anchor_dt + timedelta(days=1))
 
-    values = ee.Dictionary({
-        "elevasi": _get_elevation(point),
-        "tutupan_lahan": _get_land_cover(point),
-        "ndvi": _get_ndvi(point, ndvi_start, ndvi_end),
-        "kelembapan_tanah": _get_soil_moisture(point, soil_end),
-    }).getInfo()
+        values = ee.Dictionary({
+            "elevasi": _get_elevation(point),
+            "tutupan_lahan": _get_land_cover(point),
+            "ndvi": _get_ndvi(point, ndvi_start, ndvi_end),
+            "kelembapan_tanah": _get_soil_moisture(point, soil_end),
+        }).getInfo()
 
-    return values
+        if isinstance(values, dict):
+            for k, v in fallback.items():
+                if values.get(k) is None:
+                    values[k] = v
+            return values
+    except Exception as e:
+        import logging
+        logging.getLogger("floodify.gee").warning("GEE offline/unauthenticated on server: %s. Using spatial fallback.", e)
+
+    return fallback
