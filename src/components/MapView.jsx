@@ -17,13 +17,13 @@ const DENPASAR_CENTER = [-8.65, 115.2167]
 const markerIcon = L.divIcon({
   className: '',
   html: `
-    <div class="relative flex items-center justify-center" style="width:26px;height:26px;">
-      <span class="pulse-ring absolute inline-block rounded-full" style="width:14px;height:14px;background:#146678;"></span>
-      <span class="floodify-marker relative inline-block rounded-full border-2 border-white" style="width:14px;height:14px;background:#0f4c5c;"></span>
+    <div class="relative flex items-center justify-center" style="width:32px;height:32px;">
+      <span class="pulse-ring absolute inline-block rounded-full" style="width:20px;height:20px;background:#2699b0;"></span>
+      <span class="floodify-marker relative inline-block rounded-full border-[3px] border-white shadow-lg" style="width:18px;height:18px;background:#0f4c5c;"></span>
     </div>
   `,
-  iconSize: [26, 26],
-  iconAnchor: [13, 13],
+  iconSize: [32, 32],
+  iconAnchor: [16, 16],
 })
 
 function ClickCatcher({ onInside, onOutside }) {
@@ -90,55 +90,59 @@ export default function MapView({ position, flyTarget, onSelect, onOutsideClick 
   const mapRef = useRef(null)
 
   return (
-    <MapContainer
-      center={DENPASAR_CENTER}
-      zoom={12}
-      minZoom={10}
-      maxZoom={18}
-      zoomControl={false}
-      scrollWheelZoom
-      className="h-full w-full"
-      style={{ width: '100%', height: '100%' }}
-      maxBounds={bounds.pad(1.2)}
-      maxBoundsViscosity={0.5}
-      ref={mapRef}
-    >
-      <ZoomControl position="bottomright" />
-      <TileLayer
-        attribution='&copy; <a href="https://carto.com/attributions">CARTO</a> &copy; OpenStreetMap contributors'
-        url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-      />
+    <div className="relative h-full w-full">
+      <MapContainer
+        center={DENPASAR_CENTER}
+        zoom={12}
+        minZoom={10}
+        maxZoom={20}
+        zoomControl={false}
+        scrollWheelZoom
+        className="h-full w-full"
+        style={{ width: '100%', height: '100%' }}
+        maxBounds={bounds.pad(1.2)}
+        maxBoundsViscosity={0.5}
+        ref={mapRef}
+      >
+        <ZoomControl position="bottomright" />
+        <TileLayer
+          attribution='&copy; Google Maps'
+          url="https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}"
+          maxZoom={20}
+          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
+        />
 
-      {/* Dim everything outside Kota Denpasar using an even-odd mask polygon */}
-      <Polygon
-        positions={maskPositions}
-        pathOptions={{
-          fillColor: '#0a3040',
-          fillOpacity: 0.45,
-          stroke: false,
-          fillRule: 'evenodd',
-          interactive: false,
-          className: 'mask-outside',
-        }}
-      />
+        {/* Dim everything outside Kota Denpasar using an even-odd mask polygon */}
+        <Polygon
+          positions={maskPositions}
+          pathOptions={{
+            fillColor: '#1e3a47',
+            fillOpacity: 0.26,
+            stroke: false,
+            fillRule: 'evenodd',
+            interactive: false,
+            className: 'mask-outside',
+          }}
+        />
 
-      {/* Denpasar boundary outline */}
-      <Polygon
-        positions={DENPASAR_BOUNDARY}
-        pathOptions={{
-          color: '#607a63',
-          weight: 2,
-          fill: false,
-          dashArray: '4 5',
-        }}
-        interactive={false}
-      />
+        {/* Denpasar boundary outline */}
+        <Polygon
+          positions={DENPASAR_BOUNDARY}
+          pathOptions={{
+            color: '#0f4c5c',
+            weight: 3,
+            fill: false,
+            dashArray: '6 6',
+          }}
+          interactive={false}
+        />
 
-      <ClickCatcher onInside={onSelect} onOutside={onOutsideClick} />
-      <FlyToHandler target={flyTarget} />
-      <MapResizer />
+        <ClickCatcher onInside={onSelect} onOutside={onOutsideClick} />
+        <FlyToHandler target={flyTarget} />
+        <MapResizer />
 
-      {position && <Marker position={position} icon={markerIcon} />}
-    </MapContainer>
+        {position && <Marker position={position} icon={markerIcon} />}
+      </MapContainer>
+    </div>
   )
 }

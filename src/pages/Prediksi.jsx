@@ -185,9 +185,9 @@ export default function Prediksi() {
   const isFutureDate = date > TODAY_STR
 
   return (
-    <div className="mx-auto flex max-w-[1580px] w-full flex-col gap-4 sm:gap-5 px-4 sm:px-6 lg:px-8 py-3.5 sm:py-5 lg:h-[calc(100vh-76px)] lg:flex-row">
+    <div className="mx-auto flex max-w-[1580px] w-full flex-col gap-4 sm:gap-6 px-4 sm:px-6 lg:px-8 py-4 sm:py-6 lg:h-[calc(100vh-84px)] lg:flex-row">
       {/* Map panel */}
-      <div className="relative h-[440px] sm:h-[520px] lg:h-full w-full lg:flex-1 overflow-hidden rounded-2xl sm:rounded-3xl border border-deep-200 bg-[#dfeef0] shadow-sm">
+      <div className="relative h-[440px] sm:h-[520px] lg:h-full w-full lg:flex-1 overflow-hidden rounded-2xl sm:rounded-3xl border border-deep-300 bg-[#B5E1E6] shadow-sm">
         <MapView
           position={position ? [position.lat, position.lng] : null}
           flyTarget={flyTarget}
@@ -195,12 +195,12 @@ export default function Prediksi() {
           onOutsideClick={handleOutsideClick}
         />
 
-        <div className="pointer-events-none absolute left-4 top-4 z-[1000] hidden md:block rounded-xl border border-deep-200 bg-white/90 px-4 py-2.5 shadow-sm backdrop-blur">
-          <p className="font-display text-base font-semibold text-deep-900">Peta Kota Denpasar</p>
-          <p className="text-sm text-deep-800/80">Klik di dalam batas wilayah untuk memilih lokasi</p>
+        <div className="pointer-events-none absolute left-4 top-4 z-[1000] hidden md:block rounded-xl border border-deep-300 bg-white/95 px-4 py-3 shadow-md backdrop-blur">
+          <p className="font-display text-base sm:text-lg font-bold text-deep-950">Peta Kota Denpasar</p>
+          <p className="text-sm sm:text-base text-deep-900 font-medium">Klik di dalam batas wilayah untuk memilih lokasi</p>
         </div>
 
-        <div className="absolute left-3 right-3 sm:left-auto sm:right-4 top-3 sm:top-4 z-[1000] sm:w-80">
+        <div className="absolute left-3 right-3 sm:left-auto sm:right-4 top-3 sm:top-4 z-[1000] sm:w-84">
           <SearchBox onSelectResult={handleSearchSelect} />
         </div>
 
@@ -210,45 +210,45 @@ export default function Prediksi() {
             type="button"
             onClick={handleCurrentLocation}
             disabled={locating}
-            className="flex items-center gap-2 rounded-xl border border-deep-200/80 bg-white/90 px-3.5 py-2.5 text-sm font-semibold text-deep-900 shadow-md backdrop-blur transition-all duration-200 hover:bg-white hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-75 cursor-pointer"
+            className="flex items-center gap-2.5 rounded-xl border border-deep-300 bg-white/95 px-4 py-3 text-base font-bold text-deep-950 shadow-md backdrop-blur transition-all duration-200 hover:bg-white hover:shadow-lg active:scale-95 disabled:cursor-not-allowed disabled:opacity-75 cursor-pointer"
             title="Gunakan lokasi GPS saya saat ini"
           >
             {locating ? (
-              <Loader2 size={16} className="animate-spin text-deep-600" />
+              <Loader2 size={19} className="animate-spin text-deep-800" />
             ) : (
-              <LocateFixed size={16} className="text-[#0f4c5c]" />
+              <LocateFixed size={19} className="text-deep-800" />
             )}
             <span className="hidden sm:inline">Lokasi Saya</span>
           </button>
         </div>
 
         {outsideWarning && (
-          <div className="rise-in absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2 rounded-full bg-alert-high px-4 py-2.5 text-sm sm:text-base font-semibold text-white shadow-lg whitespace-nowrap">
-            <AlertTriangle size={17} />
+          <div className="rise-in absolute bottom-4 left-1/2 z-[1000] flex -translate-x-1/2 items-center gap-2.5 rounded-full bg-red-700 px-5 py-3 text-base sm:text-lg font-bold text-white shadow-xl whitespace-nowrap">
+            <AlertTriangle size={20} />
             Titik ini di luar wilayah Kota Denpasar
           </div>
         )}
       </div>
 
       {/* Control / result panel */}
-      <aside className="flex w-full flex-col gap-3.5 sm:gap-4 lg:w-[380px] xl:w-[420px] shrink-0 lg:overflow-y-auto lg:pr-1">
+      <aside className="flex w-full flex-col gap-4 sm:gap-5 lg:w-[390px] xl:w-[440px] shrink-0 lg:overflow-y-auto lg:pr-1">
         {/* Tanggal Prediksi Card */}
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5 shadow-sm">
-          <p className="mb-2.5 sm:mb-3 text-sm font-semibold uppercase tracking-wider text-deep-800">
+        <div className="rounded-2xl sm:rounded-3xl border border-deep-300/80 bg-white/95 p-5 sm:p-6 shadow-sm">
+          <p className="mb-3 text-sm sm:text-base font-bold uppercase tracking-wider text-deep-900">
             Tanggal Prediksi
           </p>
-          <label className="flex items-center gap-2.5 rounded-xl border border-deep-200 bg-sage-100 px-3.5 py-2.5 focus-within:ring-2 focus-within:ring-deep-500/20">
-            <CalendarDays size={18} className="text-deep-700 shrink-0" />
+          <label className="flex items-center gap-3 rounded-xl border border-deep-300 bg-[#eef5f3] px-4 py-3 focus-within:ring-2 focus-within:ring-deep-600/25 focus-within:border-deep-600 transition-all">
+            <CalendarDays size={22} className="text-deep-800 shrink-0" />
             <input
               type="date"
               value={date}
               min={MIN_DATE_STR}
               max={MAX_DATE_STR}
               onChange={(e) => handleDateChange(e.target.value)}
-              className="w-full bg-transparent font-mono text-base font-medium text-deep-900 outline-none"
+              className="w-full bg-transparent font-mono text-base sm:text-lg font-semibold text-deep-950 outline-none"
             />
           </label>
-          <p className="mt-2.5 text-sm leading-relaxed text-deep-800/80">
+          <p className="mt-3 text-sm sm:text-base leading-relaxed text-deep-900/90 font-normal">
             {isFutureDate
               ? `Tanggal ke depan: curah hujan pakai data forecast, sedangkan NDVI & kelembapan tanah tetap memakai citra satelit terbaru yang tersedia (belum ada citra untuk tanggal ini).`
               : `Tanggal hari ini atau lampau: seluruh parameter memakai data observasi historis.`}
@@ -256,35 +256,35 @@ export default function Prediksi() {
         </div>
 
         {/* Lokasi Terpilih Card */}
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5 shadow-sm">
-          <p className="mb-2.5 sm:mb-3 text-sm font-semibold uppercase tracking-wider text-deep-800">
+        <div className="rounded-2xl sm:rounded-3xl border border-deep-300/80 bg-white/95 p-5 sm:p-6 shadow-sm">
+          <p className="mb-3 text-sm sm:text-base font-bold uppercase tracking-wider text-deep-900">
             Lokasi Terpilih
           </p>
-          <div className="grid grid-cols-2 gap-2.5 sm:gap-3">
-            <div className="rounded-xl border border-deep-200/60 bg-sage-100 px-3.5 py-2.5">
-              <p className="text-xs sm:text-sm font-medium text-deep-800/75">Latitude</p>
-              <p className="font-mono text-base font-semibold text-deep-900 truncate mt-0.5">
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl border border-deep-300/70 bg-[#eef5f3] px-4 py-3">
+              <p className="text-xs sm:text-sm font-semibold text-deep-900/80">Latitude</p>
+              <p className="font-mono text-base sm:text-lg font-bold text-deep-950 truncate mt-0.5">
                 {position ? position.lat.toFixed(4) : '—'}
               </p>
             </div>
-            <div className="rounded-xl border border-deep-200/60 bg-sage-100 px-3.5 py-2.5">
-              <p className="text-xs sm:text-sm font-medium text-deep-800/75">Longitude</p>
-              <p className="font-mono text-base font-semibold text-deep-900 truncate mt-0.5">
+            <div className="rounded-xl border border-deep-300/70 bg-[#eef5f3] px-4 py-3">
+              <p className="text-xs sm:text-sm font-semibold text-deep-900/80">Longitude</p>
+              <p className="font-mono text-base sm:text-lg font-bold text-deep-950 truncate mt-0.5">
                 {position ? position.lng.toFixed(4) : '—'}
               </p>
             </div>
           </div>
 
           {position && (
-            <div className="mt-3.5">
-              <div className="flex items-center gap-2 text-sm text-deep-900">
+            <div className="mt-4">
+              <div className="flex items-center gap-2 text-sm sm:text-base text-deep-950 font-medium">
                 {loadingParams ? (
-                  <span className="flex items-center gap-2 text-deep-700">
-                    <Loader2 size={15} className="animate-spin shrink-0 text-deep-600" /> Mengambil parameter elevasi, tutupan lahan, NDVI, kelembapan &amp; curah hujan...
+                  <span className="flex items-center gap-2 text-deep-900 font-medium">
+                    <Loader2 size={17} className="animate-spin shrink-0 text-deep-700" /> Mengambil parameter elevasi, tutupan lahan, NDVI, kelembapan &amp; curah hujan...
                   </span>
                 ) : paramsReady ? (
-                  <span className="flex items-center gap-2 text-deep-900 font-medium">
-                    <span className="h-2.5 w-2.5 rounded-full bg-alert-low shrink-0 ring-2 ring-alert-low/20" />
+                  <span className="flex items-center gap-2 text-deep-950 font-semibold">
+                    <span className="h-3 w-3 rounded-full bg-emerald-600 shrink-0 ring-2 ring-emerald-600/30" />
                     Parameter lokasi siap digunakan
                   </span>
                 ) : null}
@@ -292,50 +292,50 @@ export default function Prediksi() {
 
               {/* Informative 5 Parameter Grid */}
               {paramsReady && parameters && (
-                <div className="rise-in mt-3 space-y-2 rounded-xl border border-deep-200/80 bg-sage-50/70 p-2.5 sm:p-3">
+                <div className="rise-in mt-3.5 space-y-2.5 rounded-xl border border-deep-300/80 bg-[#eef5f3]/80 p-3 sm:p-4">
                   <div className="flex items-center justify-between">
-                    <p className="text-xs font-semibold uppercase tracking-wider text-deep-800">
+                    <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-deep-900">
                       Parameter Lingkungan
                     </p>
-                    <span className="text-xs text-deep-800/70">GEE &amp; Weather</span>
+                    <span className="text-xs sm:text-sm text-deep-900/75 font-semibold">GEE &amp; Weather</span>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm">
-                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
-                      <CloudRain size={17} className="shrink-0 text-sky-600" />
+                  <div className="grid grid-cols-2 gap-2.5 text-sm">
+                    <div className="flex items-center gap-2.5 rounded-lg border border-deep-200/80 bg-white p-2.5 shadow-2xs">
+                      <CloudRain size={20} className="shrink-0 text-sky-700" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-deep-800/75">Curah Hujan</p>
-                        <p className="font-semibold text-deep-900 truncate">
+                        <p className="text-xs sm:text-sm font-medium text-deep-900/80">Curah Hujan</p>
+                        <p className="font-bold text-deep-950 text-sm sm:text-base truncate">
                           {parameters.curah_hujan != null ? `${parameters.curah_hujan.toFixed(1)} mm` : '—'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
-                      <Mountain size={17} className="shrink-0 text-amber-700" />
+                    <div className="flex items-center gap-2.5 rounded-lg border border-deep-200/80 bg-white p-2.5 shadow-2xs">
+                      <Mountain size={20} className="shrink-0 text-amber-800" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-deep-800/75">Elevasi</p>
-                        <p className="font-semibold text-deep-900 truncate">
+                        <p className="text-xs sm:text-sm font-medium text-deep-900/80">Elevasi</p>
+                        <p className="font-bold text-deep-950 text-sm sm:text-base truncate">
                           {parameters.elevasi != null ? `${parameters.elevasi.toFixed(1)} m dpl` : '—'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
-                      <Sprout size={17} className="shrink-0 text-emerald-600" />
+                    <div className="flex items-center gap-2.5 rounded-lg border border-deep-200/80 bg-white p-2.5 shadow-2xs">
+                      <Sprout size={20} className="shrink-0 text-emerald-700" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-deep-800/75">NDVI (Vegetasi)</p>
-                        <p className="font-semibold text-deep-900 truncate">
+                        <p className="text-xs sm:text-sm font-medium text-deep-900/80">NDVI (Vegetasi)</p>
+                        <p className="font-bold text-deep-950 text-sm sm:text-base truncate">
                           {parameters.ndvi != null ? parameters.ndvi.toFixed(2) : '—'}
                         </p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
-                      <Droplets size={17} className="shrink-0 text-teal-600" />
+                    <div className="flex items-center gap-2.5 rounded-lg border border-deep-200/80 bg-white p-2.5 shadow-2xs">
+                      <Droplets size={20} className="shrink-0 text-teal-700" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-deep-800/75">Kelembapan</p>
-                        <p className="font-semibold text-deep-900 truncate">
+                        <p className="text-xs sm:text-sm font-medium text-deep-900/80">Kelembapan</p>
+                        <p className="font-bold text-deep-950 text-sm sm:text-base truncate">
                           {parameters.kelembapan_tanah != null
                             ? `${(parameters.kelembapan_tanah * 100).toFixed(1)}%`
                             : '—'}
@@ -343,12 +343,12 @@ export default function Prediksi() {
                       </div>
                     </div>
 
-                    <div className="col-span-2 flex items-center gap-2 rounded-lg bg-white/90 p-2 shadow-2xs">
-                      <Building2 size={17} className="shrink-0 text-indigo-600" />
+                    <div className="col-span-2 flex items-center gap-2.5 rounded-lg border border-deep-200/80 bg-white p-2.5 shadow-2xs">
+                      <Building2 size={20} className="shrink-0 text-indigo-700" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-deep-800/75">Tutupan Lahan</p>
+                        <p className="text-xs sm:text-sm font-medium text-deep-900/80">Tutupan Lahan</p>
                         <p
-                          className="font-semibold text-deep-900 truncate"
+                          className="font-bold text-deep-950 text-sm sm:text-base truncate"
                           title={LAND_COVER_LABELS[parameters.tutupan_lahan] || `Kode ${parameters.tutupan_lahan}`}
                         >
                           {LAND_COVER_LABELS[parameters.tutupan_lahan] || `Kode ${parameters.tutupan_lahan}`}
@@ -364,59 +364,59 @@ export default function Prediksi() {
           <button
             onClick={handlePredict}
             disabled={!position || loadingParams || loadingPredict}
-            className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-deep-900 px-4 py-3.5 text-base font-semibold text-sand transition-colors duration-200 hover:bg-deep-800 disabled:cursor-not-allowed disabled:bg-deep-300 disabled:text-deep-700/60 cursor-pointer shadow-sm"
+            className="mt-5 flex w-full items-center justify-center gap-2.5 rounded-xl bg-deep-950 px-5 py-4 text-base sm:text-lg font-bold text-sand transition-all duration-200 hover:bg-deep-900 active:scale-[0.99] disabled:cursor-not-allowed disabled:bg-deep-300 disabled:text-deep-700/60 cursor-pointer shadow-md"
           >
             {loadingPredict ? (
-              <Loader2 size={17} className="animate-spin" />
+              <Loader2 size={20} className="animate-spin" />
             ) : (
-              <Search size={17} />
+              <Search size={20} />
             )}
             Prediksi Sekarang
           </button>
 
           {!position && (
-            <p className="mt-2.5 flex items-center gap-1.5 text-sm text-deep-800/75">
-              <MapPin size={14} className="shrink-0" /> Pilih titik pada peta terlebih dahulu
+            <p className="mt-3 flex items-center gap-2 text-sm sm:text-base font-medium text-deep-900/85">
+              <MapPin size={16} className="shrink-0 text-deep-700" /> Pilih titik pada peta terlebih dahulu
             </p>
           )}
 
           {error && (
-            <p className="mt-2.5 rounded-lg bg-alert-high/10 px-3.5 py-2.5 text-sm text-alert-high font-medium">
+            <p className="mt-3 rounded-xl bg-red-50 border border-red-200 px-4 py-3 text-sm sm:text-base text-red-800 font-semibold leading-relaxed">
               {error}
             </p>
           )}
         </div>
 
         {/* Hasil Prediksi Card */}
-        <div className="rounded-2xl border border-deep-200 bg-white/80 p-4 sm:p-5 shadow-sm">
-          <p className="mb-3 sm:mb-4 text-sm font-semibold uppercase tracking-wider text-deep-800">
+        <div className="rounded-2xl sm:rounded-3xl border border-deep-300/80 bg-white/95 p-5 sm:p-6 shadow-sm">
+          <p className="mb-3.5 sm:mb-4 text-sm sm:text-base font-bold uppercase tracking-wider text-deep-900">
             Hasil Prediksi
           </p>
 
           {result ? (
-            <div className="rise-in flex items-center gap-4">
+            <div className="rise-in flex items-center gap-5">
               <RiskGauge probability={result.probabilitas} level={level} />
-              <div>
-                <p className="text-sm font-medium text-deep-800/75">Status</p>
+              <div className="min-w-0 flex-1">
+                <p className="text-xs sm:text-sm font-semibold text-deep-900/80 uppercase tracking-wider">Status</p>
                 <p
-                  className="font-display text-xl sm:text-2xl font-semibold"
+                  className="font-display text-2xl sm:text-3xl font-bold mt-0.5"
                   style={{
                     color:
-                      level === 'banjir' ? '#c1543a' : '#4d8f6f',
+                      level === 'banjir' ? '#b91c1c' : '#15803d',
                   }}
                 >
                   {result.status}
                 </p>
                 {result.catatan && (
-                  <p className="mt-1.5 text-sm leading-snug text-deep-800/80">
+                  <p className="mt-2 text-sm sm:text-base leading-relaxed text-deep-900/90 font-medium">
                     {result.catatan}
                   </p>
                 )}
               </div>
             </div>
           ) : (
-            <div className="flex items-center gap-3 rounded-xl bg-deep-100/70 px-3.5 py-4 text-sm sm:text-base text-deep-800/75 font-medium">
-              <Droplets size={22} className="shrink-0 text-deep-500" />
+            <div className="flex items-center gap-3.5 rounded-xl bg-deep-100/90 border border-deep-200/70 px-4 py-4 text-sm sm:text-base text-deep-950 font-medium">
+              <Droplets size={24} className="shrink-0 text-deep-700" />
               Belum ada hasil. Pilih lokasi lalu klik &ldquo;Prediksi Sekarang&rdquo;.
             </div>
           )}

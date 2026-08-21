@@ -1,10 +1,10 @@
-const SIZE = 132
-const STROKE = 11
+const SIZE = 144
+const STROKE = 12
 const RADIUS = (SIZE - STROKE) / 2
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 const LEVELS = {
-  banjir: { color: '#c1543a', label: 'Banjir' },
-  tidak_banjir: { color: '#4d8f6f', label: 'Tidak Banjir' },
+  banjir: { color: '#b91c1c', label: 'Banjir' },
+  tidak_banjir: { color: '#15803d', label: 'Tidak Banjir' },
 }
 
 export function levelFromStatus(status) {
@@ -28,7 +28,7 @@ export default function RiskGauge({ probability = 0, level = 'tidak_banjir' }) {
           cy={SIZE / 2}
           r={RADIUS}
           fill="none"
-          stroke="#e3ebe0"
+          stroke="#cbdcd8"
           strokeWidth={STROKE}
         />
         <circle
@@ -45,10 +45,10 @@ export default function RiskGauge({ probability = 0, level = 'tidak_banjir' }) {
         />
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-mono text-3xl font-semibold text-deep-900">
+        <span className="font-mono text-3xl sm:text-4xl font-bold text-deep-950">
           {clamped.toFixed(0)}%
         </span>
-        <span className="text-xs uppercase tracking-wide text-deep-700/80 font-semibold mt-0.5">
+        <span className="text-xs sm:text-sm uppercase tracking-wider text-deep-900 font-bold mt-0.5">
           probabilitas
         </span>
       </div>

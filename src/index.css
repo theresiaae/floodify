@@ -2,6 +2,10 @@
 @tailwind components;
 @tailwind utilities;
 
+html {
+  font-size: 90%;
+}
+
 html,
 body,
 #root {
@@ -9,19 +13,19 @@ body,
 }
 
 body {
-  @apply bg-[#f8faf9] text-deep-900 font-body antialiased;
+  @apply bg-[#f8faf9] text-deep-950 font-body antialiased;
   background-image: radial-gradient(circle at 1px 1px, rgba(0, 204, 255, 0.06) 1px, transparent 0);
   background-size: 20px 20px;
 }
 
 ::selection {
-  @apply bg-deep-300 text-deep-900;
+  @apply bg-deep-300 text-deep-950;
 }
 
 /* Leaflet container theming */
 .leaflet-container {
   font-family: 'Inter', sans-serif;
-  background: #dfeef0;
+  background: #B5E1E6;
   width: 100% !important;
   height: 100% !important;
   min-height: 100% !important;
@@ -29,7 +33,10 @@ body {
 }
 
 .leaflet-control-zoom a {
-  color: #0f4c5c !important;
+  color: #04202c !important;
+  font-weight: 700 !important;
+  font-size: 16px !important;
+  line-height: 26px !important;
 }
 
 /* Denpasar boundary mask outside layer */

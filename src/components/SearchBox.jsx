@@ -80,11 +80,11 @@ export default function SearchBox({ onSelectResult }) {
 
   return (
     <div ref={containerRef} className="relative w-full">
-      <div className="flex items-center gap-2.5 rounded-xl border border-deep-200 bg-white/95 px-3.5 py-2.5 shadow-sm backdrop-blur">
+      <div className="flex items-center gap-3 rounded-xl border border-deep-300 bg-white/95 px-4 py-2.5 sm:py-3 shadow-md backdrop-blur transition-all focus-within:border-deep-600 focus-within:ring-2 focus-within:ring-deep-600/25">
         {loading ? (
-          <Loader2 size={18} className="shrink-0 animate-spin text-deep-600" />
+          <Loader2 size={20} className="shrink-0 animate-spin text-deep-800" />
         ) : (
-          <Search size={18} className="shrink-0 text-deep-600" />
+          <Search size={20} className="shrink-0 text-deep-800" />
         )}
         <input
           value={query}
@@ -98,23 +98,23 @@ export default function SearchBox({ onSelectResult }) {
             }
           }}
           placeholder="Cari jalan atau tempat di Denpasar..."
-          className="w-full bg-transparent text-base text-deep-900 outline-none placeholder:text-deep-800/50 font-body"
+          className="w-full bg-transparent text-base sm:text-lg text-deep-950 font-medium outline-none placeholder:text-deep-900/60 font-body"
         />
         {query && (
           <button
             type="button"
             onClick={handleClear}
-            className="rounded-md p-1 text-deep-400 hover:bg-deep-100 hover:text-deep-700 transition-colors"
+            className="rounded-md p-1.5 text-deep-700 hover:bg-deep-100 hover:text-deep-950 transition-colors"
           >
-            <X size={16} />
+            <X size={18} />
           </button>
         )}
       </div>
 
       {open && results.length > 0 && (
-        <ul className="rise-in absolute left-0 right-0 top-full z-[1000] mt-1.5 max-h-64 overflow-y-auto rounded-xl border border-deep-200 bg-white shadow-lg">
+        <ul className="rise-in absolute left-0 right-0 top-full z-[1000] mt-2 max-h-64 overflow-y-auto rounded-xl border border-deep-300 bg-white shadow-xl">
           {results.map((result) => (
-            <li key={result.id}>
+            <li key={result.id} className="border-b border-deep-100 last:border-b-0">
               <button
                 type="button"
                 onMouseDown={(e) => {
@@ -122,9 +122,9 @@ export default function SearchBox({ onSelectResult }) {
                   handleSelect(result)
                 }}
                 onClick={() => handleSelect(result)}
-                className="flex w-full items-start gap-2.5 px-3.5 py-2.5 text-left text-sm sm:text-base text-deep-800 hover:bg-sage-100 transition-colors"
+                className="flex w-full items-start gap-3 px-4 py-3 text-left text-base text-deep-950 hover:bg-sage-100 transition-colors font-medium"
               >
-                <MapPinned size={17} className="mt-0.5 shrink-0 text-deep-500" />
+                <MapPinned size={19} className="mt-0.5 shrink-0 text-deep-700" />
                 <span className="line-clamp-2">{result.label}</span>
               </button>
             </li>
@@ -133,7 +133,7 @@ export default function SearchBox({ onSelectResult }) {
       )}
 
       {open && !loading && query.trim().length >= MIN_QUERY_LENGTH && results.length === 0 && (
-        <div className="rise-in absolute left-0 right-0 top-full z-[1000] mt-1.5 rounded-xl border border-deep-200 bg-white px-3.5 py-2.5 text-sm text-deep-800/70 shadow-lg">
+        <div className="rise-in absolute left-0 right-0 top-full z-[1000] mt-2 rounded-xl border border-deep-300 bg-white px-4 py-3 text-base text-deep-950 font-medium shadow-xl">
           Lokasi tidak ditemukan di Denpasar.
         </div>
       )}

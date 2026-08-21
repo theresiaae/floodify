@@ -41,21 +41,21 @@ const PARAMETERS = [
 
 export default function Edukasi() {
   return (
-    <div className="mx-auto max-w-[1580px] w-full px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
-      <div className="mx-auto max-w-2xl text-center">
-        <p className="mb-2 text-sm font-semibold uppercase tracking-wide text-deep-700">
+    <div className="mx-auto max-w-[1580px] w-full px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
+      <div className="mx-auto max-w-3xl text-center">
+        <p className="mb-3 text-sm sm:text-base font-bold uppercase tracking-wider text-deep-800">
           Tentang Parameter
         </p>
-        <h1 className="font-display text-2xl font-semibold text-deep-900 sm:text-4xl">
+        <h1 className="font-display text-3xl font-bold text-deep-950 sm:text-4xl lg:text-5xl tracking-tight">
           Parameter yang Digunakan dalam Prediksi
         </h1>
-        <p className="mt-2.5 sm:mt-3 text-sm sm:text-base leading-relaxed text-deep-800/80">
+        <p className="mt-3.5 sm:mt-4 text-base sm:text-lg leading-relaxed text-deep-900/90 font-medium">
           Berikut adalah lima parameter yang digunakan model machine learning untuk
           memprediksi risiko banjir di Kota Denpasar.
         </p>
       </div>
 
-      <div className="mt-8 sm:mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="mt-10 sm:mt-12 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {PARAMETERS.map((param, i) => (
           <ParameterCard key={param.title} index={i + 1} {...param} />
         ))}
