@@ -133,17 +133,17 @@ def _get_soil_moisture(point, end_date: str):
 
 def _estimate_denpasar_parameters(lat: float, lng: float, rainfall: float = 0.0) -> dict:
     """Estimator spasial topografi Denpasar jika GEE cloud credentials belum aktif di server."""
-    # Gradien elevasi Kota Denpasar: Selatan (pesisir/Panjer) ~4-8m, Utara (Ubung) ~40m
+    # Gradien topografi alam Kota Denpasar dari Utara (Ubung ~40m) ke Selatan (Panjer ~7m, Pesisir ~2m)
     norm_y = max(0.0, min(1.0, (-8.58 - lat) / (-8.58 - (-8.73))))
-    elevasi = round(max(3.0, 42.0 - (norm_y * 35.0) + (lng - 115.21) * 8.0), 1)
+    elevasi = round(max(2.0, 42.0 * ((1.0 - norm_y) ** 1.8) + 2.2 + (lng - 115.21) * 4.0), 1)
     
     # Tutupan lahan: 50 (Lahan Terbangun) untuk Denpasar kota/selatan, 40 (Sawah) untuk utara
     tutupan_lahan = 50
     if lat > -8.62:
         tutupan_lahan = 40
         
-    # NDVI (Vegetasi): Area pemukiman/perkotaan ~0.15 - 0.22
-    ndvi = round(0.15 + (1.0 - norm_y) * 0.10, 2)
+    # NDVI (Vegetasi): Area pemukiman padat / perkotaan ~0.15
+    ndvi = round(0.15 + (1.0 - norm_y) * 0.08, 2)
 
     # Kelembapan tanah: baseline ~15.1% saat cuaca normal, meningkat saat hujan
     rain_effect = min(0.15, (max(0.0, float(rainfall)) / 100.0) * 0.20)
