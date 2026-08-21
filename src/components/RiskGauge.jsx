@@ -46,7 +46,7 @@ export default function RiskGauge({ probability = 0, level = 'tidak_banjir' }) {
       </svg>
       <div className="absolute inset-0 flex flex-col items-center justify-center">
         <span className="font-mono text-3xl sm:text-4xl font-bold text-deep-950">
-          {clamped.toFixed(0)}%
+          {clamped.toFixed(1)}%
         </span>
         <span className="text-xs sm:text-sm uppercase tracking-wider text-deep-900 font-bold mt-0.5">
           probabilitas

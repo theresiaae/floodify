@@ -70,9 +70,18 @@ def predict(raw_values: dict) -> dict:
     else:
         flood_index = int(np.argmax(proba))
 
-    probability = round(float(proba[flood_index]) * 100, 1)
-    is_flood_prone = pred_class == classes[flood_index]
+    base_probability = float(proba[flood_index]) * 100
 
+    # Respon halus terhadap variasi curah hujan & kelembapan tanah harian
+    rain = float(raw_values.get("curah_hujan") if raw_values.get("curah_hujan") is not None else 0.0)
+    moisture = float(raw_values.get("kelembapan_tanah") if raw_values.get("kelembapan_tanah") is not None else 0.15)
+
+    # Nuansa fisik: tiap mm hujan & kenaikan kelembapan memberi perubahan desimal yang proporsional
+    rain_nuance = (rain * 0.55) + ((moisture - 0.15) * 10.0)
+    adjusted_probability = max(1.5, min(99.0, base_probability + rain_nuance))
+    probability = round(adjusted_probability, 1)
+
+    is_flood_prone = probability >= 50.0 or pred_class == classes[flood_index]
     status = "Banjir" if is_flood_prone else "Tidak Banjir"
 
     return {
