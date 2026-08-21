@@ -37,24 +37,39 @@ def _initialize():
         service_account = os.environ.get("GEE_SERVICE_ACCOUNT_EMAIL")
         key_path = os.environ.get("GEE_SERVICE_ACCOUNT_KEY_PATH")
         key_json = os.environ.get("GEE_SERVICE_ACCOUNT_KEY_JSON") or os.environ.get("GEE_SERVICE_ACCOUNT_PRIVATE_KEY")
-        # Wajib sejak GEE mengharuskan tiap request terhubung ke Cloud Project
-        # terdaftar. Isi dengan Project ID hasil registrasi di
-        # https://code.earthengine.google.com/register
         project_id = os.environ.get("GEE_PROJECT_ID")
 
         if key_json:
-            credentials = ee.ServiceAccountCredentials(service_account or "", key_data=key_json)
-            ee.Initialize(credentials, project=project_id)
-        elif service_account and key_path and os.path.exists(key_path):
+            raw = key_json.strip()
+            if (raw.startswith("'") and raw.endswith("'")) or (raw.startswith('"') and raw.endswith('"')):
+                raw = raw[1:-1].strip()
+            try:
+                import json
+                info = json.loads(raw) if isinstance(raw, str) else raw
+                sa_email = service_account or (info.get("client_email") if isinstance(info, dict) else "")
+                proj = project_id or (info.get("project_id") if isinstance(info, dict) else "")
+                credentials = ee.ServiceAccountCredentials(sa_email, key_data=json.dumps(info) if isinstance(info, dict) else raw)
+                ee.Initialize(credentials, project=proj or None)
+                _initialized = True
+                return
+            except Exception as e:
+                import logging
+                logging.getLogger("floodify.gee").warning("Service Account JSON init failed: %s", e)
+
+        if service_account and key_path and os.path.exists(key_path):
             credentials = ee.ServiceAccountCredentials(service_account, key_file=key_path)
-            ee.Initialize(credentials, project=project_id)
+            ee.Initialize(credentials, project=project_id or None)
+            _initialized = True
+            return
         elif service_account and key_path:
             credentials = ee.ServiceAccountCredentials(service_account, key_data=key_path)
-            ee.Initialize(credentials, project=project_id)
+            ee.Initialize(credentials, project=project_id or None)
+            _initialized = True
+            return
         else:
             # Memakai Application Default Credentials hasil `earthengine authenticate`
-            ee.Initialize(project=project_id)
-        _initialized = True
+            ee.Initialize(project=project_id or None)
+            _initialized = True
 
 
 def _date_str(dt: datetime) -> str:
